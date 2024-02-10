@@ -1,11 +1,14 @@
 # --------------------------------------------------
 # 文件名: DQN
 # 创建时间: 2024/2/4 19:13
-# 描述: 创建一个简单的dqn试一下
+# 描述: 创建一个简单的dqn试一下，基于简单dqn，实现干扰感知的容器的部署
+# 先假设只考虑2种资源，一个是存储，一个是cpu
 # 作者: WangYuanbo
 # --------------------------------------------------
+from typing import Tuple
 
 import gym
+import numpy as np
 from gym import spaces
 from gym.core import ActType, ObsType
 
@@ -29,28 +32,35 @@ from gym.core import ActType, ObsType
 # 强化学习的大致流程是 当前状态->选择动作(e-greedy)->计算奖励&下一个状态—>回到第一步
 # 在我的这个例子里面，下一步状态与
 class CustomEnv(gym.Env):
+    # 定义动作空间和观察空间
     def __init__(self, config):
         super().__init__()
 
-        # # Define action and observation space
-        # self.action_space = spaces.Discrete(2)  # 移动左或右
-        # self.observation_space = spaces.Discrete(10)  # 位置，范围为0-9
         # 定义环境本身的配置，服务器数量，容器数量等。
-        self.config = config
-        # self.container_number
+        self.server_number = config['server_number']
+        self.container_number = config['container_number']
+        self.request_number = config['request_number']
+        # 除此以外，每个容器需要多少存储空间，也是环境信息
+        # 假设这个信息，可以从配置文件中读取
+        self.container_storage = config['container_storage']
+        self.container_cpu = config['container_cpu']
+
+        # 除此以外，每个服务的请求需要多少cpu计算资源，也是环境信息
+        self.request_resource = config['request_resource']
 
         # 1. 定义上一时刻的容器部署信息,x_{n,s}={0,1}表示服务器n上是否部署容器s
         # 此处用一个二维矩阵表示
-        self.last_container_place_space = spaces.MultiBinary((config['server_number'], config['container_number']))
+        self.last_container_place_space = spaces.MultiBinary((self.server_number, self.container_number))
 
         # 2. 定义上一时刻的请求路由信息，y_{r_s,n}={0,1}关于服务s的请求是否由边缘服务器n完成。
         # 此处也用一个二维矩阵表示
-        self.last_request_routing_space = spaces.MultiBinary((config['request_number'], config['server_number']))
+        self.last_request_routing_space = spaces.MultiBinary((self.request_number, self.server_number + 1))
 
         # 3. 定义此时的用户服务请求
         # 假设请求数量是一定的，例如请求有500个，服务100个。
-        single_user_request_space = spaces.Discrete(config['service_number'])
-        self.user_request_space = spaces.Tuple([single_user_request_space] * config['request_number'])
+        # 对于每一个用户请求的路由，有服务器数量+1种可能
+        single_user_request_space = spaces.Discrete(self.server_number + 1)
+        self.user_request_space = spaces.Tuple([single_user_request_space] * self.request_number)
 
         # 定义最终的观察空间
         self.observation_space = spaces.Dict({
@@ -62,41 +72,80 @@ class CustomEnv(gym.Env):
         # 定义动作空间，两个动作
         # 1. 对于每个服务器，部署哪些容器,x_{n,s}={0,1}表示服务器n上是否部署容器s？
         # 似乎就是上面的东西？
-        self.now_container_place_space = spaces.MultiBinary((config['server_number'], config['container_number']))
+        self.now_container_place_space = spaces.MultiBinary((self.server_number, self.container_number))
         # 2. 对于每个请求，路由到哪个服务器？
-        self.now_request_routing_space = spaces.MultiBinary((config['request_number'], config['server_number']))
-
+        self.now_request_routing_space = spaces.MultiBinary((self.request_number, self.server_number))
+        self.action_space = spaces.Dict({
+            'now_container_place': self.now_container_place_space,
+            'now_request_routing': self.now_request_routing_space
+        })
         # 定义初始状态
         # 初始状态所有都是空的，
-        # 时间戳决定了到达的请求的集合
-        self.state = {
-            'timestamp': 0,
-        }
+        # # 时间戳决定了到达的请求的集合
+        # self.state = {
+        #     'last_container_placement': np.zeros((config['server_number'], config['container_number'])),
+        #     'last_request_routing': np.zeros((config['request_number'], config['server_number'] + 1)),
+        #     'user_request': np.zeros(config['request_number'])
+        # }
 
+    # 执行一个动作，返回新的状态、奖励、以及是否完成
+    # 至于这个动作是如何选择的，这里不需要管
+    # 对于非法动作的处理：添加一个很大的负值作为惩罚
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
         # 传入一个动作，根据系统当前的状态，输出下一个观察空间
         # 至于这个动作如何选择在其他模块实现
 
         # 要返回5个变量，分别是 state (观察状态), reward, terminated, truncated, info
+        state = self.state
         reward = 0
         terminated = False
         truncated = False
         info = {}
-        if action == 0:
-            self.state = max(0, self.state - 1)
-        else:
-            self.state += 1
+        # 根据这个动作计算奖励值，
+        # 如果动作是合法的，获得奖励，并更新状态
+        if
 
-        # 奖励为当前的位置，目标是尽可能向右移动
-        reward = self.state
+        # 如果动作是非法的，获得惩罚，不更新状态
+        # ......
+        # ......
+        # ......
 
-        # 如果达到最右边，则结束
-        done = (self.state == 9)
+        # 判断是否达到了截断条件和终止条件。
 
         # 状态应该返回给智能体
-        return self.state, reward, done, {}
+        return self.state, reward, terminated, truncated, {}
 
+    # 初始化环境状态
     def reset(self):
-        # 重置位置到最左边
-        self.state = 0
+        # self.timestamp = 0
+        self.state = {
+            'timestamp': 1,
+            'last_container_placement': np.zeros((self.server_number, self.container_number)),
+            'last_request_routing': np.zeros((self.request_number, self.server_number + 1)),
+            'user_request': np.zeros(self.request_number)
+        }
         return self.state
+
+    # 检查动作是不是合法的
+    def isValid(self, action: ActType) -> bool:
+        # 对于服务部署，检查容器的的磁盘空间是不是满足的
+        x = action['now_container_place']
+        for n in range(self.server_number):
+            # 计算服务器n上的存储空间
+            n_storage = 0
+            for s in range(self.container_number):
+                n_storage += x[n][s] * self.container_storage[s]
+            if n_storage > self.container_storage[n]:
+                return False
+        # 对于请求路由，首先检查服务器的cpu资源是不是足够的
+        y = action['now_request_routing']
+        for n in range(self.server_number):
+            n_cpu = 0
+            for u in range(self.request_number):
+                n_cpu += y[u][n] * self.request_resource[u]
+            if n_cpu > self.container_cpu[n]:
+                return False
+        # 检查请求路由的边缘服务器是否部署了对应的服务
+        for n in range(self.server_number):
+            for u in range(self.request_number):
+                if x[]
