@@ -35,6 +35,12 @@ class CustomEnv(gym.Env):
     # 定义动作空间和观察空间
     def __init__(self, config):
         super().__init__()
+        # 定义一个非法动作的惩罚
+        self.penalty = config['penalty']
+        # 定义终止时间戳
+        self.end_timestamp = config['end_timestamp']
+        # 定义每个容器镜像的拉取时延
+        self.images_pulling_delay = config['images_pulling_delay']
 
         # 定义环境本身的配置，服务器数量，容器数量等。
         self.server_number = config['server_number']
@@ -45,9 +51,15 @@ class CustomEnv(gym.Env):
         self.container_storage = config['container_storage']
         self.container_cpu = config['container_cpu']
 
-        # 除此以外，每个服务的请求需要多少cpu计算资源，也是环境信息
+        # 定义每个用户的请求需要多少cpu计算资源，也是环境信息
         self.request_resource = config['request_resource']
 
+        # 定义每个时隙的用户请求,
+        # 每个时隙的用户请求是一个一维数组
+        # config传入的全体请求就是一个二维数组
+        self.user_request_per_ts = config['user_request_per_ts']
+
+        # ######定义观察空间#######
         # 1. 定义上一时刻的容器部署信息,x_{n,s}={0,1}表示服务器n上是否部署容器s
         # 此处用一个二维矩阵表示
         self.last_container_place_space = spaces.MultiBinary((self.server_number, self.container_number))
@@ -62,13 +74,17 @@ class CustomEnv(gym.Env):
         single_user_request_space = spaces.Discrete(self.server_number + 1)
         self.user_request_space = spaces.Tuple([single_user_request_space] * self.request_number)
 
+        # 4.定义当前时间戳
+        self.timestamp_space = spaces.Discrete(self.end_timestamp + 1)
+
         # 定义最终的观察空间
         self.observation_space = spaces.Dict({
             'last_container_placement': self.last_container_place_space,
             'last_request_routing': self.last_request_routing_space,
             'user_request': self.user_request_space,
+            'timestamp': self.timestamp_space,
         })
-
+        # ##########动作空间##########
         # 定义动作空间，两个动作
         # 1. 对于每个服务器，部署哪些容器,x_{n,s}={0,1}表示服务器n上是否部署容器s？
         # 似乎就是上面的东西？
@@ -103,21 +119,31 @@ class CustomEnv(gym.Env):
         info = {}
         # 根据这个动作计算奖励值，
         # 如果动作是合法的，获得奖励，并更新状态
-        if
+        # 如果动作是非法的，要更新时间戳状态，不更新上一个部署的状态
+        if not self.isValid(action):
+            reward += self.penalty
+        else:
+            reward += self.getReward(action, state)
+            # 更新上一个部署系统状态
+            state["last_container_placement"] = action["now_container_place"]
+            state["last_request_routing"] = action["now_request_routing"]
+        # 更新系统时间戳状态
+        state['timestamp'] += 1
 
-        # 如果动作是非法的，获得惩罚，不更新状态
-        # ......
-        # ......
-        # ......
+        # 根据下一个时间戳更新下一个时间戳的系统状态
+        ts = state['timestamp']
+        state['user_request'] = self.user_request_per_ts[ts]
 
-        # 判断是否达到了截断条件和终止条件。
+        # 判断是否达到了截断条件和终止条件?
+        if ts > self.end_timestamp:
+            terminated = True
 
-        # 状态应该返回给智能体
-        return self.state, reward, terminated, truncated, {}
+        return self.state, reward, terminated, truncated, info
 
     # 初始化环境状态
     def reset(self):
         # self.timestamp = 0
+        # reset返回的状态要与obsSpace对应
         self.state = {
             'timestamp': 1,
             'last_container_placement': np.zeros((self.server_number, self.container_number)),
@@ -128,8 +154,25 @@ class CustomEnv(gym.Env):
 
     # 检查动作是不是合法的
     def isValid(self, action: ActType) -> bool:
-        # 对于服务部署，检查容器的的磁盘空间是不是满足的
         x = action['now_container_place']
+        y = action['now_request_routing']
+        # 约束一
+        # 检查是不是所有的用户请求都有一个服务器完成
+        for u in range(self.request_number):
+            count_server = 0
+            for n in range(self.server_number + 1):
+                count_server += y[u][n]
+            if count_server != 1:
+                return False
+        # 约束二
+        # 检查请求路由的边缘服务器是否部署了对应的服务
+        for u in range(self.request_number):
+            for n in range(self.server_number):
+                for s in range(self.container_number):
+                    if y[u][n] > x[n][s]:
+                        return False
+        # 约束三
+        # 对于服务部署，检查容器的的磁盘空间是不是满足的
         for n in range(self.server_number):
             # 计算服务器n上的存储空间
             n_storage = 0
@@ -137,15 +180,28 @@ class CustomEnv(gym.Env):
                 n_storage += x[n][s] * self.container_storage[s]
             if n_storage > self.container_storage[n]:
                 return False
+        # 约束四
         # 对于请求路由，首先检查服务器的cpu资源是不是足够的
-        y = action['now_request_routing']
         for n in range(self.server_number):
             n_cpu = 0
             for u in range(self.request_number):
                 n_cpu += y[u][n] * self.request_resource[u]
             if n_cpu > self.container_cpu[n]:
                 return False
-        # 检查请求路由的边缘服务器是否部署了对应的服务
-        for n in range(self.server_number):
-            for u in range(self.request_number):
-                if x[]
+        # 需要考虑请求覆盖的问题
+        # 这个约束在建模里面没有
+
+    # 对于一个合法的动作计算他获得的奖励
+    # 初始版本，只计算镜像拉取带来的延迟
+    def getReward(self, action: ActType, state: ObsType) -> int:
+        # 如果当前时间戳是1，直接计算拉取延迟
+        x = action['now_container_place']
+        b = self.images_pulling_delay
+        total_delay = 0
+        delay_pulling = 0
+        if state.timestamp == 0:
+            for n in range(self.server_number):
+                for s in range(self.container_number):
+                    delay_pulling += x[n][s] * b[s]
+        total_delay += delay_pulling
+        return -total_delay
