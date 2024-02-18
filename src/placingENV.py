@@ -37,6 +37,7 @@ class CustomEnv(gym.Env):
     # 定义动作空间和观察空间
     def __init__(self, config):
         super().__init__()
+
         # ########系统数据######
         # 定义一个非法动作的惩罚
         self.penalty = config['penalty']
@@ -68,20 +69,18 @@ class CustomEnv(gym.Env):
         self.last_request_routing_space = spaces.MultiBinary((self.request_number, self.server_number + 1))
 
         # 3. 定义此时的用户服务请求
-        # 假设请求数量是一定的，例如请求有500个，服务100个。
-        # 对于每一个用户请求的路由，有服务器数量+1种可能
-        single_user_request_space = spaces.Discrete(self.server_number + 1)
+        # 假设请求数量是一定的，例如请求有500个，服务镜像100个。
+        single_user_request_space = spaces.Discrete(self.container_number )
         self.user_request_space = spaces.Tuple([single_user_request_space] * self.request_number)
 
-        # 4.定义当前时间戳
-        self.timestamp_space = spaces.Discrete(self.end_timestamp + 1)
+
 
         # 定义最终的观察空间
         self.observation_space = spaces.Dict({
             'last_container_placement': self.last_container_place_space,
             'last_request_routing': self.last_request_routing_space,
             'user_request': self.user_request_space,
-            'timestamp': self.timestamp_space,
+            # 'timestamp': self.timestamp_space,
         })
         # ##########动作空间##########
         # 定义动作空间，两个动作
@@ -89,24 +88,33 @@ class CustomEnv(gym.Env):
         # 似乎就是上面的东西？
         self.now_container_place_space = spaces.MultiBinary((self.server_number, self.container_number))
         # 2. 对于每个请求，路由到哪个服务器？
-        self.now_request_routing_space = spaces.MultiBinary((self.request_number, self.server_number))
+        self.now_request_routing_space = spaces.MultiBinary((self.request_number, self.server_number+1))
         self.action_space = spaces.Dict({
             'now_container_place': self.now_container_place_space,
             'now_request_routing': self.now_request_routing_space
         })
+        # 定义动作空间的输入维度
+        # 全部铺平后相加
+        # self.action_dim = sum(np.prod(space.shape) for space in self.action_space.values())
+        # 定义状态空间的输入维度
+        self.state_dim = (np.prod(self.last_container_place_space.shape) +
+                          np.prod(self.last_request_routing_space.shape) +
+                          len(self.user_request_space))
         # 定义初始状态
         # 初始状态所有都是空的，
         # # 时间戳决定了到达的请求的集合
-        # self.state = {
-        #     'last_container_placement': np.zeros((config['server_number'], config['container_number'])),
-        #     'last_request_routing': np.zeros((config['request_number'], config['server_number'] + 1)),
-        #     'user_request': np.zeros(config['request_number'])
-        # }
+        self.state = {
+            'last_container_placement': np.zeros((config['server_number'], config['container_number'])),
+            'last_request_routing': np.zeros((config['request_number'], config['server_number'] + 1)),
+            'user_request': np.zeros(config['request_number'])
+        }
+        self.timestamp = 1
 
     # 执行一个动作，返回新的状态、奖励、以及是否完成
     # 至于这个动作是如何选择的，这里不需要管
     # 对于非法动作的处理：添加一个很大的负值作为惩罚
-    def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
+    def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
+        # print(action)
         # 传入一个动作，根据系统当前的状态，输出下一个观察空间
         # 至于这个动作如何选择在其他模块实现
 
@@ -127,31 +135,33 @@ class CustomEnv(gym.Env):
             state["last_container_placement"] = action["now_container_place"]
             state["last_request_routing"] = action["now_request_routing"]
         # 更新系统时间戳状态
-        state['timestamp'] += 1
-        ts = state['timestamp']
+        self.timestamp += 1
+        ts = self.timestamp
         # 判断是否达到了截断条件和终止条件?
         if ts > self.end_timestamp:
             terminated = True
-
-        return self.state, reward, terminated, truncated, info
+        done=terminated or truncated
+        return self.state, reward, done, info
 
     # 初始化环境状态
     def reset(self):
         # self.timestamp = 0
         # reset返回的状态要与obsSpace对应
         self.state = {
-            'timestamp': 1,
             'last_container_placement': np.zeros((self.server_number, self.container_number)),
             'last_request_routing': np.zeros((self.request_number, self.server_number + 1)),
             'user_request': np.zeros(self.request_number)
         }
+        self.timestamp = 1
         return self.state
 
     # 检查动作是不是合法的
     def isValid(self, action: ActType, state: ObsType) -> bool:
         x = action['now_container_place']
         y = action['now_request_routing']
-        ts = state['timestamp']
+        # print(x.shape)
+        # print(y.shape)
+        ts = self.timestamp
         # 约束一
         # 检查是不是所有的用户请求都有一个服务器完成
         for u in range(self.request_number):
@@ -205,7 +215,7 @@ class CustomEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    print('hello')
+    # print('hello')
     with open('config.yaml', 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
 
@@ -231,21 +241,14 @@ if __name__ == '__main__':
             config[file_name.replace('.csv', '')] = data_dict
     # print(config)
     env = CustomEnv(config=config)
-    print("hello")
-    print(env.action_space)
+    # print("hello")
+    # print(env.action_space)
+    # print(env.action_space.sample())
+    # print(env.input_dim)
+    # print(env.action_space.n)
     print(env.observation_space)
-    #
-    # # # 使用pandas.read_csv函数读取CSV文件
-    # # data_frame = pd.read_csv(csv_file)
-    # # # 我们将 'server_id' 列设置为数据帧的索引
-    # # data_frame.set_index('server_id', inplace=True)
-    # # # 使用pandas.DataFrame.to_dict函数将数据帧(DataFrame)转换为字典
-    # # # 这里我们使用了 'records' 参数，这会使得每行数据转换为一个字典，所有的这些字典形成列表
-    # # # 'records' 使得每条记录被表示为带有列名称的字典
-    # # data_dict = data_frame.to_dict('index')
-    # # csv_dict = {}
-    # # csv_dict[csv_file.replace('.csv', '')] = data_dict
-    # print(csv_dict)
-    # # 打印出结果字典，用于检查
-    # for item in data_dict:
-    #     print(item)
+    initial_state = env.reset()
+    print(env.timestamp)
+    # print(initial_state)
+    print(env.action_dim)
+    print(env.state_dim)

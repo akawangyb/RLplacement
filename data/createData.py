@@ -30,10 +30,10 @@ def create_container_data():
     downloading_bandwith = 1000
 
     container_df = pd.DataFrame({
-        'image_id': range(1, container_number + 1),
-        'image_size': np.random.randint(70, 2000, container_number)
+        'container_id': range(1, container_number + 1),
+        'container_size': np.random.randint(70, 2000, container_number)
     })
-    container_df['image_pulling_delay'] = container_df['image_size'] / downloading_bandwith
+    container_df['container_pulling_delay'] = container_df['container_size'] / downloading_bandwith
     container_df.to_csv('container_info.csv', encoding='utf-8', index=False)
 
 
@@ -78,6 +78,10 @@ def create_user_request_data():
 
     # 生成具有特定列名的DataFrame
     user_request_df = pd.DataFrame(pre_data, columns=cols)
+
+    # 插入timestamp列
+    user_request_df.insert(0, 'timestamp', range(1, 1 + total_time))
+
     user_request_df.to_csv('user_request_info.csv', encoding='utf-8', index=False)
 
 

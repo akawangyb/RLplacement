@@ -1,0 +1,25 @@
+# 定义非法动作惩罚
+penalty: -0.5
+# 定义终止时间戳
+end_timestamp: 24
+
+# 定义边缘服务器数量
+server_number: 5
+container_number: 100
+request_number: 500
+# 定义镜像拉取时延
+# 这是一个数组从文件中读取
+#images_pulling_delay:
+# 定义每个容器需要的存储空间,一维数组,从文件中读取
+#container_storage:
+#定义一个请求资源
+#对于每个镜像的请求需要消耗多少资源,这是一个二维数组,从文件读取
+#列分别是用户1请求服务,用户1消耗的资源,用户2请求服务,用户2消耗的资源
+#行表示时间戳
+#request_resource:
+#  #cpu和硬盘资源上下限
+#  #min_cpu_frequency : 5
+#  #max_cpu_frequency : 5
+#  #min_disk_storage : 100
+#  #max_disk_storage : 100
+server_cpu: 5

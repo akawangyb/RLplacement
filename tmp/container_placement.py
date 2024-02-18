@@ -66,7 +66,7 @@ def select_action(state):
                     math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
-        # 测设让他强制执行开发
+        # 执行利用
         with torch.no_grad():
             # t.max(1) will return the largest column value of each row.
             # second column on max result is index of where max element was
