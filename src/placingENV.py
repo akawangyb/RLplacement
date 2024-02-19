@@ -129,6 +129,7 @@ class CustomEnv(gym.Env):
         # 如果动作是非法的，要更新时间戳状态，不更新上一个部署的状态
         if not self.isValid(action, state):
             reward += self.penalty
+            print("not valid action")
         else:
             reward += self.getReward(action, state)
             # 更新上一个部署系统状态

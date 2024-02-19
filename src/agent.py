@@ -19,7 +19,7 @@ import yaml
 from torch import nn
 from tqdm import tqdm
 
-from src.placingENV import CustomEnv
+from placingENV import CustomEnv
 
 # 经验是一个具名元组
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
@@ -203,6 +203,11 @@ class DQN:
             # 从动作空间随机选择动作
             # action = random.randrange(self.action_dim)
             action = env.action_space.sample()
+            # 目的是要随便选择一个合法的动作
+            # 可否使用gurobi？
+            #
+            # while not env.isValid(action, state):
+            #     action = env.action_space.sample()
         # 以1-epsilon概率利用已知的最优行动
         else:
             # 这里的state是一个dict,如何映射成一维数组?
@@ -306,10 +311,10 @@ def action_tensor_to_np(action):
 
 
 lr = 2e-3
-num_episodes = 500
+num_episodes = 100
 hidden_dim = 128
 gamma = 0.98
-epsilon = 0.01
+epsilon = 0.5
 target_update = 10
 buffer_size = 10000
 minimal_size = 500
@@ -364,7 +369,10 @@ for i in range(10):
             done = False
             while not done:
                 action = agent.take_action(state)
+                # if not env.isValid(action, state):
+                #     action = agent.take_action(state)
                 next_state, reward, done, _ = env.step(action)
+                print("reward: ", reward)
                 # state,next_state 要转换成一维变量，可以直接交给qnet处理
                 replay_buffer.add(state, action, reward, next_state, done)
                 state = next_state
