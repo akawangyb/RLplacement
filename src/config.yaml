@@ -7,6 +7,7 @@ end_timestamp: 24
 server_number: 5
 container_number: 100
 request_number: 500
+cloud_latency: 5
 # 定义镜像拉取时延
 # 这是一个数组从文件中读取
 #images_pulling_delay:

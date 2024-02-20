@@ -30,7 +30,7 @@ def create_container_data():
     downloading_bandwith = 1000
 
     container_df = pd.DataFrame({
-        'container_id': range(1, container_number + 1),
+        'container_id': range(container_number ),
         'container_size': np.random.randint(70, 2000, container_number)
     })
     container_df['container_pulling_delay'] = container_df['container_size'] / downloading_bandwith
@@ -41,12 +41,12 @@ def create_container_data():
 def create_edge_server_data():
     # 假设所有的服务器都是同构的
     min_cpu_frequency = 5
-    max_cpu_frequency = 5
-    min_disk_storage = 100
-    max_disk_storage = 100
+    max_cpu_frequency = 6
+    min_disk_storage = 100000
+    max_disk_storage = 100001
     server_number = 5
     server_df = pd.DataFrame({
-        'server_id': range(1, server_number + 1),
+        'server_id': range(server_number),
         'cpu_size': np.random.randint(min_cpu_frequency, max_cpu_frequency, server_number),
         'storage_size': np.random.randint(min_disk_storage, max_disk_storage, server_number)
     })
@@ -62,7 +62,7 @@ def create_user_request_data():
     # 也就是说生成一个二维表行是时间戳，列是用户，行是时间戳
     # 对于一个用户，他包含了两个信息，一是请求哪个服务，而是需要消耗多少资源
     # 初始化列名
-    cols = ['user_' + str(i // 2 + 1) + '_image' if i % 2 == 0 else 'user_' + str(i // 2 + 1) + '_cpu' for i in
+    cols = ['user_' + str(i // 2 ) + '_image' if i % 2 == 0 else 'user_' + str(i // 2 ) + '_cpu' for i in
             range(user_number * 2)]
 
     # 对于'request'列和'cpu'列生成不同的随机数
@@ -72,7 +72,7 @@ def create_user_request_data():
 
     for i in range(user_number * 2):
         if i % 2 == 0:  # 'request'列
-            pre_data[:, i] = np.random.randint(1, container_number, total_time)
+            pre_data[:, i] = np.random.randint(0, container_number, total_time)
         else:  # 'cpu'列
             pre_data[:, i] = np.random.uniform(min_cpu_frequency, max_cpu_frequency, total_time)
 
@@ -80,7 +80,7 @@ def create_user_request_data():
     user_request_df = pd.DataFrame(pre_data, columns=cols)
 
     # 插入timestamp列
-    user_request_df.insert(0, 'timestamp', range(1, 1 + total_time))
+    user_request_df.insert(0, 'timestamp', range(total_time))
 
     user_request_df.to_csv('user_request_info.csv', encoding='utf-8', index=False)
 
