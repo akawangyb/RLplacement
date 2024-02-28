@@ -4,9 +4,9 @@ penalty: -10000
 end_timestamp: 25
 
 # 定义边缘服务器数量
-server_number: 3
-container_number: 10
-user_number: 10
+server_number: 5
+container_number: 100
+request_number: 500
 cloud_latency: 5
 # 定义镜像拉取时延
 # 这是一个数组从文件中读取

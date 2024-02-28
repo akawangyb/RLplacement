@@ -7,11 +7,12 @@
 # --------------------------------------------------
 # S个容器要部署到N个服务器上，动作空间是2^(N*S)个，
 # 考虑这样一个子问题，容器s是否部署到服务器n上，动作空间只有2个
-
+import argparse
 import collections
 import math
 import os
 import random
+import sys
 from collections import deque, namedtuple
 from datetime import datetime
 
@@ -172,20 +173,38 @@ class DQN:
         self.count += 1
 
 
+# 指定训练gpu
+parser = argparse.ArgumentParser(description='选择训练GPU的参数')
+parser.add_argument('--gpu', type=int, default=0, help='要使用的GPU的编号')
+
+# 解析参数
+args = parser.parse_args()
+
+# 设置CUDA设备
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+
+# 确认使用的设备
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
+
+# 获得脚本名字
+filename = os.path.basename(sys.argv[0])  # 获取脚本文件名
+script_name = os.path.splitext(filename)[0]  # 去除.py后缀
 # 日志输出路径
 father_log_directory = '../log'
 if not os.path.exists(father_log_directory):
     os.makedirs(father_log_directory)
 current_time = datetime.now()
 formatted_time = current_time.strftime('%Y%m%d-%H_%M_%S')
+log_file_name = script_name + formatted_time
 
-log_path = os.path.join(father_log_directory, formatted_time)
+log_path = os.path.join(father_log_directory, log_file_name)
 # 规范化文件路径
 log_dir = os.path.normpath(log_path)
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 log_path = os.path.join(log_dir, 'info.log')
-f = open(log_path, 'w', encoding='utf-8')
+f_log = open(log_path, 'w', encoding='utf-8')
 writer = SummaryWriter(log_dir)
 
 EPS_START = 0.9
@@ -194,7 +213,7 @@ EPS_DECAY = 1000
 steps_done = 0
 
 lr = 2e-3
-num_episodes = 200
+num_episodes = 2000
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.5
@@ -202,8 +221,6 @@ target_update = 10
 buffer_size = 10000
 minimal_size = 100
 batch_size = 64
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
-    "cpu")
 
 server_storage_size = 100000
 container_info = []
@@ -236,6 +253,7 @@ for i_episode in range(num_episodes):
     state = env.reset()
     done = False
     index = 0
+    f_log.write("episode:{}\n".format(i_episode))
     while not done:
         # print(index)
         index += 1
@@ -260,4 +278,6 @@ for i_episode in range(num_episodes):
             }
             agent.update(transition_dict)
     return_list.append(episode_return)
-    print(episode_return)
+    f_log.write("episode_return: {}\n".format(episode_return))
+    print("episode {} return: {}".format(i_episode,episode_return))
+    # print(episode_return)

@@ -13,6 +13,7 @@ import os
 # print(config['user_request_info'][1])
 # 先要定义变量
 import gurobipy as gp
+import numpy as np
 import pandas as pd
 import yaml
 from gurobipy import GRB, quicksum
@@ -126,5 +127,9 @@ m.optimize()
 
 # 输出最优解的目标函数值
 print('最优解的目标函数值: ', m.objVal)
-for v in m.getVars():
-    print('%s: %g' % (v.varName, v.x))
+
+x_result = np.array([[x[i, j].x for j in x_columns] for i in x_rows])
+y_result = np.array([[y[i, j].x for j in y_columns] for i in y_rows])
+print(x_result)
+# for v in m.getVars():
+#     print('%s: %g' % (v.varName, v.x))
