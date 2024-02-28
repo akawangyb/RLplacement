@@ -10,10 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 假设文件名是“rewards.txt”
-filename = "../log/routing_agent20240228-12_19_41/info.log"
-
-episodes = []
-total_rewards = []
+filename = "../log_reserved/routing_agent20240228-12_19_41OK/info.log"
 
 episodes = []
 total_rewards = []
@@ -34,7 +31,7 @@ with open(filename, 'r') as file:
         total_rewards.append(total_reward)
 
         # 解析 each agent reward
-        line = lines[i+1].strip()  # 删除首尾空格
+        line = lines[i + 1].strip()  # 删除首尾空格
         each_agent_reward = ast.literal_eval(line.split(": ")[1])  # 将字符串转换为列表
 
         agent_rewards.append(each_agent_reward)
@@ -44,15 +41,22 @@ agent_rewards = np.array(agent_rewards)
 
 # 创建折线图
 plt.figure(figsize=(10, 6))
+
+# 限制绘制的数据在前5000个episodes
+episodes = episodes[:50]
+total_rewards = total_rewards[:50]
+agent_rewards = agent_rewards[:50, :]
+
+# 绘制总的奖励曲线
 plt.plot(episodes, total_rewards, label='Total Reward')
 
 # 绘制每个 agent 的奖励曲线
 for i in range(agent_rewards.shape[1]):
-    plt.plot(episodes, agent_rewards[:, i], label=f'Agent {i+1} Reward')
+    plt.plot(episodes, agent_rewards[:, i], label=f'Agent {i + 1} Reward')
 
 plt.xlabel('Episodes')
 plt.ylabel('Rewards')
 plt.title('Rewards Over Episodes')
-plt.legend()
+plt.legend(loc='upper right')
 plt.grid()
 plt.show()

@@ -1,114 +1,19 @@
 # --------------------------------------------------
-# 文件名: routing_agent
-# 创建时间: 2024/2/26 10:20
-# 描述: 用户请求的智能体
+# 文件名: placing_routing_maddpg
+# 创建时间: 2024/2/28 16:00
+# 描述: 服务部署请求路由的maddpg算法
 # 作者: WangYuanbo
 # --------------------------------------------------
-# 一个用户请求要路由到s个服务器上，动作空间是s+1
-# n个用户的请求要路由，动作空间是(s+1)^n
-# 这个问题的奖励不是稀疏的
-# 假设一个解决用户的请求路由到哪个服务器上，
 import argparse
-import collections
 import os
-import random
 import sys
-from collections import namedtuple, deque
 from datetime import datetime
 
-import numpy as np
-import torch
-import torch.nn.functional as F
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 
-from routing_env import CustomEnv
-from tools import get_server_info, get_container_info, get_user_request_info, get_placing_info
-
-# 经验是一个具名元组
-Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
-
-
-# 首先定义经验回放池
-class ReplayBuffer:
-    ''' 经验回放池 '''
-
-    def __init__(self, capacity):
-        self.buffer = collections.deque(maxlen=capacity)  # 队列,先进先出
-
-    def add(self, state, action, reward, next_state, done):  # 将数据加入buffer
-        self.buffer.append((state, action, reward, next_state, done))
-
-    def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
-        transitions = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = zip(*transitions)
-        state = np.array(state)
-        return state, action, reward, np.array(next_state), done
-
-    def size(self):  # 目前buffer中数据的数量
-        return len(self.buffer)
-
-
-class ReplayMemory(object):
-    # memory实现了一个队列
-    def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
-
-    def push(self, *args):
-        """Save a transition"""
-        self.memory.append(Transition(*args))
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
-    def __getitem__(self, item):
-        return self.memory[item]
-
-
-def onehot_from_logits(logits, eps=0.2):
-    ''' 生成最优动作的独热（one-hot）形式 '''
-    argmax_acs = (logits == logits.max(1, keepdim=True)[0]).float()
-    # 生成随机动作,转换成独热形式
-    rand_acs = torch.autograd.Variable(
-        torch.eye(logits.shape[1])[[np.random.choice(range(logits.shape[1]), size=logits.shape[0])]],
-        requires_grad=False).to(logits.device)
-
-    # for i, r in enumerate(torch.rand(logits.shape[0])):
-    #     print(i, r)
-    # print(argmax_acs.shape, rand_acs.shape)
-    # print(argmax_acs.shape[0], argmax_acs.shape[1])
-    # 通过epsilon-贪婪算法来选择用哪个动作
-    return torch.stack([
-        argmax_acs[i] if r > eps else rand_acs[i]
-        for i, r in enumerate(torch.rand(logits.shape[0]))
-    ])
-
-
-def sample_gumbel(shape, eps=1e-20, tens_type=torch.FloatTensor):
-    """从Gumbel(0,1)分布中采样"""
-    U = torch.autograd.Variable(tens_type(*shape).uniform_(),
-                                requires_grad=False)
-    return -torch.log(-torch.log(U + eps) + eps)
-
-
-def gumbel_softmax_sample(logits, temperature):
-    """ 从Gumbel-Softmax分布中采样"""
-    y = logits + sample_gumbel(logits.shape, tens_type=type(logits.data)).to(
-        logits.device)
-    return F.softmax(y / temperature, dim=1)
-
-
-def gumbel_softmax(logits, temperature=1.0):
-    """从Gumbel-Softmax分布中采样,并进行离散化"""
-    y = gumbel_softmax_sample(logits, temperature)
-    y_hard = onehot_from_logits(y)
-    y = (y_hard.to(logits.device) - y).detach() + y
-    # 返回一个y_hard的独热量,但是它的梯度是y,我们既能够得到一个与环境交互的离散动作,又可以
-    # 正确地反传梯度
-    return y
+from placing_routing_env import CustomEnv
+from tools import *
 
 
 class TwoLayerFC(torch.nn.Module):
@@ -144,9 +49,7 @@ class DDPG:
                                                  lr=critic_lr)
 
     def take_action(self, state, explore=False):
-
         action = self.actor(state)
-
         if explore:
             action = gumbel_softmax(action)
         else:
@@ -163,11 +66,16 @@ class DDPG:
 class MADDPG:
     def __init__(self, env, device, actor_lr, critic_lr, hidden_dim,
                  state_dims, action_dims, critic_input_dim, gamma, tau):
+        # 这里的MADDPG，相当于一个大的公司下面有2个部门（placing ，routing），每个部门下面有自己的员工
         self.agents = []
-        for i in range(env.agents):
+        for i in range(env.agents_number):
             self.agents.append(
                 DDPG(state_dims[i], action_dims[i], critic_input_dim,
                      hidden_dim, actor_lr, critic_lr, device))
+
+        self.placing_agents_number = env.placing_agents_number
+        self.routing_agents_number = env.routing_agents_number
+
         self.gamma = gamma
         self.tau = tau
         self.critic_criterion = torch.nn.MSELoss()
@@ -183,20 +91,28 @@ class MADDPG:
         return [agt.target_actor for agt in self.agents]
 
     def dict_to_np(self, states):
+        # 把所有的数据铺平
         a = states['server_cpu']
         b = states['user_request_cpu']
-        c = np.eye(self.container_number)[states['user_request_imageID']].reshape(-1)
-        states = np.concatenate((a, b, c))
+        # c = np.eye(self.container_number)[states['user_request_imageID']].reshape(-1)
+        c = states['user_request_imageID']
+        d = states['server_storage']
+        e = states['container_storage']
+        f = states['last_placing_action'].reshape(-1)
+
+        states = np.concatenate((a, b, c, d, e, f))
         states = states.reshape(1, -1)
         # states = torch.tensor(states, dtype=torch.float).view(1, -1).to(self.device)
         return states
 
     def take_action(self, states, explore):
-        # 所有的子智能体公用同一个系统状态
-        # 系统状态是Dict类型，直接铺平
+        # routing智能体公用同一个状态
+        # placing智能体公用同一个状态
+        # routing系统状态是Dict类型，只需要把他处理即可
+
         states = [self.dict_to_np(state) for state in states]
 
-        states = [torch.tensor(state, dtype=torch.float, device=self.device)
+        states = [torch.tensor(state, dtype=torch.float, device=self.device).view(1, -1)
                   for state in states]
         return [
             agent.take_action(state, explore)
@@ -209,7 +125,6 @@ class MADDPG:
         # 这些数据还是list类型没有换成tensor
         # batch_size = len(states)
         # 第一维是智能体数量,第二位是取样批次大小
-        # print("batch_size: ", batch_size)
         temp_states = []
         for agent_state in states:
             agent_state_tensor = []
@@ -219,9 +134,12 @@ class MADDPG:
         states = temp_states
 
         # actions = torch.stack([torch.tensor(action, dtype=torch.float).to(self.device) for action in actions])
+        print(type(actions))
+        print(type(actions[0]))
+        actions是一个list，list类型
         actions = torch.tensor(np.array(actions), dtype=torch.float).to(self.device)
 
-        # print(actions.shape)
+
         rewards = torch.stack([torch.tensor(reward, dtype=torch.float).to(self.device) for reward in rewards])
 
         temp_states = []
@@ -245,7 +163,6 @@ class MADDPG:
         cur_agent.critic_optimizer.zero_grad()
         # 计算所有智能体的cur_agent.target_actor(next_states)
         # next_states 是一个状态张量torch.Size([64, 1, 113])
-        # print(type(next_states))
         all_target_actions = [
             onehot_from_logits(agent_critic(next_st))
             for agent_critic, next_st in zip(self.target_policies, next_states)
@@ -334,26 +251,35 @@ sigma = 0.01  # 高斯噪声标准差
 
 with open('config.yaml', 'r', encoding='utf-8') as f:
     config = yaml.safe_load(f)
-penalty = -10
+penalty = 1000
 server_info = get_server_info()
 container_info = get_container_info()
 user_request_info = get_user_request_info(config['user_number'])
 placing_info = get_placing_info()
 
 config['max_cpu'] = 5
+config['max_storage'] = 100000
+config['cloud_delay'] = 10
+config['edge_delay'] = 5
+
 env = CustomEnv(server_info=server_info, container_info=container_info, user_request_info=user_request_info,
-                placing_info=placing_info, penalty=penalty, config=config)
+                penalty=penalty, config=config)
 raw_state = env.reset()
 
 random.seed(0)
 np.random.seed(0)
 torch.manual_seed(0)
 replay_buffer = ReplayBuffer(buffer_size)
+
+# 假设有两个maddpg大agent,一个是routing组长，一个是placing组长,下面的全是员工
+
+routing_action_dims = env.routing_action_dims
+placing_action_dims = env.placing_action_dims
+action_dims = placing_action_dims + routing_action_dims
 state_dims = env.state_dims
-action_dims = env.action_dims
 critic_input_dim = sum(state_dims) + sum(action_dims)
 
-maddpg = MADDPG(env=env, state_dims=state_dims, action_dims=action_dims,
+maddpg = MADDPG(env=env, action_dims=action_dims, state_dims=state_dims,
                 critic_input_dim=critic_input_dim,
                 hidden_dim=hidden_dim, actor_lr=actor_lr, critic_lr=critic_lr,
                 tau=tau, gamma=gamma, device=device)
@@ -368,7 +294,6 @@ def evaluate(para_env, maddpg, n_episode=10):
         while not dones[0]:
             actions = maddpg.take_action(states, explore=False)
             next_states, rewards, dones, info = env.step(actions)
-            # print(rewards)
             rewards = np.array(rewards)
             returns += rewards * 1.0
     returns = returns / n_episode
@@ -378,15 +303,14 @@ def evaluate(para_env, maddpg, n_episode=10):
 return_list = []  # 记录每一轮的回报（return）
 total_step = 0
 for i_episode in range(num_episodes):
-    state, done = env.reset()
+    states, dones = env.reset()
     # ep_returns = np.zeros(len(env.agents))
-    while not done[0]:
-        actions = maddpg.take_action(state, explore=True)
+    while not dones[0]:
+        actions = maddpg.take_action(states, explore=True)
         # 这里输出的actions是一个np的list
-        next_state, reward, done, _ = env.step(actions)
-        # print(reward)
-        replay_buffer.add(state, actions, reward, next_state, done)
-        state = next_state
+        next_states, rewards, dones, _ = env.step(actions)
+        replay_buffer.add(states, actions, rewards, next_states, dones)
+        states = next_states
         total_step += 1
         if replay_buffer.size(
         ) >= minimal_size and total_step % update_interval == 0:
@@ -409,7 +333,7 @@ for i_episode in range(num_episodes):
 
             sample = [stack_array(x) for x in sample]
 
-            for a_i in range(env.agents):
+            for a_i in range(env.agents_number):
                 maddpg.update(sample, a_i)
             maddpg.update_all_targets()
     if (i_episode + 1) % 100 == 0:

@@ -86,7 +86,7 @@ class CustomEnv(gym.Env):
         # 初始状态所有都是空的，
         # # 时间戳决定了到达的请求的集合
         print(self.state_dims[0])
-        self.state = [np.zeros(self.state_dims[0])] * self.user_number
+        self.state = {}
         self.timestamp = 0
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
@@ -111,6 +111,7 @@ class CustomEnv(gym.Env):
         # print(action)
         # 约束一，必须部署相应的镜像
         for user, user_action in enumerate(action):
+            # print(state['user_request_imageID'][user])
             imageID = state['user_request_imageID'][user]
             server_index = np.argmax(user_action)
             if server_index == self.server_number:
