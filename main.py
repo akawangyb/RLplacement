@@ -1,7 +1,4 @@
 # This is a sample Python script.
-import math
-
-from matplotlib import pyplot as plt
 
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -27,25 +24,26 @@ if __name__ == '__main__':
     # print("当前时间：", formatted_time)
     # print("当前时间：", formatted_date)
     # jisuan
-    EPS_START = 0.9
-    EPS_END = 0.05
-    EPS_DECAY = 1000
-    steps_done = 0
-    x = []
-    y = []
-    for i in range(10000):
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-                        math.exp(-1. * steps_done / EPS_DECAY)
-        steps_done += 1
-        x.append(i)
-        y.append(eps_threshold)
-    plt.plot(x, y)  # 绘制线图
-
-    plt.xlabel('X')  # 设置X轴标签
-    plt.ylabel('Y')  # 设置Y轴标签
-    plt.title('Line Plot Example')  # 设置标题
-
-    plt.show()  # 显示图像
-
+    # EPS_START = 0.9
+    # EPS_END = 0.05
+    # EPS_DECAY = 1000
+    # steps_done = 0
+    # x = []
+    # y = []
+    # for i in range(10000):
+    #     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+    #                     math.exp(-1. * steps_done / EPS_DECAY)
+    #     steps_done += 1
+    #     x.append(i)
+    #     y.append(eps_threshold)
+    # plt.plot(x, y)  # 绘制线图
+    #
+    # plt.xlabel('X')  # 设置X轴标签
+    # plt.ylabel('Y')  # 设置Y轴标签
+    # plt.title('Line Plot Example')  # 设置标题
+    #
+    # plt.show()  # 显示图像
+    x = '0101010'
+    print(list(x))
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

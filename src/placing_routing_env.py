@@ -138,7 +138,6 @@ class CustomEnv(gym.Env):
 
         routing_action = action[-self.routing_agents_number:]
         state = self.state
-        reward = [0] * self.agents_number
         terminated = False
         truncated = False
         info = {}
@@ -148,76 +147,93 @@ class CustomEnv(gym.Env):
         # 如果routing到了一个非法的placing，给一个惩罚。
         # 如果routing的上一个系统状态是合法的
 
+        # 对于placing问题，假设服务器每部署一个镜像的奖励是1，超过存储的惩罚是-10，不获得奖励
+        # 对于routing问题，假设用户的请求由云服务器完成，奖励是0，由正确的边缘服务器完成，奖励是1，不正确的边缘服务器，惩罚是-1，
+
         # 先把上一个时隙的placing动作找出来
         last_placing_action = state['last_placing_action'].reshape(self.server_number, self.container_number)
         # 解决placing的约束
         placing_rewards = [0] * self.server_number
-        placing_matrix = [None] * self.server_number
+        placing_matrix = []
         # 找出合法的服务器镜像部署动作
         valid_server_list = [True] * self.server_number
         for server_id, server_action in enumerate(placing_action):
             # 获得具体的部署动作
             server_action = np.argmax(server_action)
             # server_action是一个十进制数，要把他转换成二进制list
-            server_action = np.binary_repr(server_action, width=self.container_number)
-            placing_matrix[server_id] = server_action
+            server_action = np.binary_repr(server_action, width=self.container_number)  # 到这一步是一个0，1 str
+            server_action = np.array(list(server_action), dtype=int)
+            placing_matrix.append(server_action)
             server_storage_demand = sum([
-                int(is_placed) * self.container_info[container_id]['storage']
+                is_placed * self.container_info[container_id]['storage']
                 for container_id, is_placed in enumerate(server_action)
             ])
 
             if self.server_info[server_id]['storage'] <= server_storage_demand:
                 valid_server_list[server_id] = False
                 # 也就是负责服务器i部署的智能体获得一个惩罚
-                placing_rewards[server_id] += self.penalty
+                placing_rewards[server_id] = -10
             else:  # 否则获得奖励是前后的容器拉取延迟
-                for container_id, is_placed in enumerate(last_placing_action[server_id]):
-                    placing_rewards[server_id] += is_placed * self.container_info[container_id]['pulling']
+                placing_rewards[server_id] += sum([is_placed for is_placed in placing_matrix[server_id]])
+                # for container_id, is_placed in enumerate(last_placing_action[server_id]):
+                #     placing_rewards[server_id] += (1-is_placed) * self.container_info[container_id]['pulling']
         now_placing_action = []
         for server_id in range(self.server_number):
             if valid_server_list[server_id]:
-                now_placing_action.append(np.array(list(last_placing_action[server_id]), dtype=int))
+                now_placing_action.append(placing_matrix[server_id])
             else:
                 now_placing_action.append([0] * self.container_number)
 
         # 再解决routing的奖励
         routing_rewards = [0] * self.user_number
+        # valid_user_action = [True] * self.user_number
+        # 先判断动作是不是合法的，最后计算奖励和惩罚
         # 约束一，必须部署相应的镜像
         for user, user_action in enumerate(routing_action):
             imageID = state['user_request_imageID'][user]
             # 这里要检查一下
             server_index = np.argmax(user_action)
             if server_index == self.server_number:
-                reward[user] += self.cloud_delay  # 路由到云服务器的奖励为0
-            # 路由到错误部署的服务器，获得一个惩罚
+                routing_rewards[user] = 0  # 路由到云服务器的奖励为0
+                # valid_user_action[user] = True
+            # 路由的目标服务器，没有部署相应的镜像
             elif placing_matrix[server_index][imageID] == 0:
-                reward[user] += self.penalty
+                # valid_user_action[user] = False
+                routing_rewards[user] = -1
+            # 路由的目标服务器，存储资源超过了
             elif not valid_server_list[server_index]:
-                reward[user] += self.penalty
+                routing_rewards[user] = -1
+                # valid_user_action[user] = False
             else:
-                reward[user] += self.edge_delay  # 路由到边缘服务器的奖励，是其执行时间
+                routing_rewards[user] = 1  # 路由到边缘服务器的奖励，是其执行时间
+                # valid_user_action[user] = True
 
         # 约束二，cpu计算量不能超
         cpu_demand = [0] * self.server_number
         # 先找出哪个服务器超过了
+        invalid_server_cpu_list = []
         for user, user_action in enumerate(routing_action):
-            server_index = np.argmax(user_action)
-            if server_index == self.server_number:
+            server_id = np.argmax(user_action)
+            if server_id == self.server_number:
                 continue
             else:
-                cpu_demand[server_index] += state['user_request_cpu'][user]
+                cpu_demand[server_id] += state['user_request_cpu'][user]
 
-        invalid_server_list = []
-        for server_index, cpu in enumerate(cpu_demand):
-            if cpu > state['server_cpu'][server_index]:
-                invalid_server_list.append(server_index)
+        for server_id, cpu in enumerate(cpu_demand):
+            if cpu > state['server_cpu'][server_id]:
+                invalid_server_cpu_list.append(server_id)
 
         # 超过cpu的智能体获得惩罚
-        for invalid_server in invalid_server_list:
+        for invalid_server_id in invalid_server_cpu_list:
             for user, user_action in enumerate(action):
-                server_index = np.argmax(user_action)
-                if server_index == invalid_server:
-                    reward[user] += self.penalty
+                server_id = np.argmax(user_action)
+                if server_id == invalid_server_id:
+                    # valid_user_action[user] = False
+                    routing_rewards[user] = -1 #cpu资源超过了
+        # for user_id, is_valid_routing in enumerate(valid_user_action):
+        #     if not is_valid_routing:
+        #         routing_rewards[user_id] += -1
+        #     else:
 
         # 更新系统时间戳状态
         self.timestamp += 1
@@ -235,7 +251,7 @@ class CustomEnv(gym.Env):
             state['last_placing_action'] = np.array(now_placing_action).reshape(-1)
         done = terminated or truncated
         self.state = state
-        return [self.state] * self.agents_number, reward, [done] * self.agents_number, info
+        return [self.state] * self.agents_number, placing_rewards + routing_rewards, [done] * self.agents_number, info
 
     def reset(self):
         # self.timestamp = 0

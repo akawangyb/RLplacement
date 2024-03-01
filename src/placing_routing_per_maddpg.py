@@ -1,4 +1,11 @@
 # --------------------------------------------------
+# 文件名: placing_routing_per_maddpg
+# 创建时间: 2024/3/1 22:25
+# 描述: 基于优先记忆回放的maddpg解决服务部署和请求调度
+# 作者: WangYuanbo
+# --------------------------------------------------
+
+# --------------------------------------------------
 # 文件名: placing_routing_maddpg
 # 创建时间: 2024/2/28 16:00
 # 描述: 服务部署请求路由的maddpg算法
@@ -12,6 +19,7 @@ from datetime import datetime
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 
+from memory.buffer import PrioritizedReplayBuffer
 from placing_routing_env import CustomEnv
 from tools import *
 
@@ -270,7 +278,12 @@ raw_state = env.reset()
 random.seed(0)
 np.random.seed(0)
 torch.manual_seed(0)
-replay_buffer = ReplayBuffer(buffer_size)
+
+# 有两个动作
+replay_buffer = PrioritizedReplayBuffer(
+    state_size=env.state_dim,
+    action_size=2,
+    buffer_size=buffer_size)
 
 # 假设有两个maddpg大agent,一个是routing组长，一个是placing组长,下面的全是员工
 
@@ -311,12 +324,14 @@ for i_episode in range(num_episodes):
         # 这里输出的actions是一个np的list
         next_states, rewards, dones, _ = env.step(actions)
         # print(rewards)
-        replay_buffer.add(states, actions, rewards, next_states, dones)
+        # states 和 next_states 转换成一维的
+        replay_buffer.add((states, actions, rewards, next_states, dones))
         states = next_states
         total_step += 1
         if replay_buffer.size(
         ) >= minimal_size and total_step % update_interval == 0:
             sample = replay_buffer.sample(batch_size)
+
 
             # 原始记忆的形状为（时间步长，智能体数，状态 / 行动 / 奖励）
             # 按智能体训练的记忆形状为 （智能体数，时间步长，状态/行动/奖励）

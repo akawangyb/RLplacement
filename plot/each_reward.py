@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 假设文件名是“rewards.txt”
-filename = "../log_reserved/routing_agent20240228-12_19_41OK/info.log"
+# filename = "../log_reserved/routing_agent20240228-12_19_41OK/info.log"
+filename = "../log_reserved/placing_routing_maddpg20240229-11_25_09OK/info.log"
 
 episodes = []
 total_rewards = []
@@ -43,9 +44,9 @@ agent_rewards = np.array(agent_rewards)
 plt.figure(figsize=(10, 6))
 
 # 限制绘制的数据在前5000个episodes
-episodes = episodes[:50]
-total_rewards = total_rewards[:50]
-agent_rewards = agent_rewards[:50, :]
+# episodes = episodes[:50]
+# total_rewards = total_rewards[:50]
+# agent_rewards = agent_rewards[:50, :]
 
 # 绘制总的奖励曲线
 plt.plot(episodes, total_rewards, label='Total Reward')
