@@ -6,7 +6,7 @@
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 # file_name = '../log_reserved/placing_routing_maddpg20240229-11_25_09OK/info.log'
-file_name = '../log_reserved/placing_routing_maddpg20240229-15_04_19OK/info.log'
+file_name = '../log_reserved/placing_routing_per_maddpg20240302-17_07_26OK/info.log'
 
 
 # 初始化存储数据的列表

@@ -174,12 +174,13 @@ for i_episode in range(num_episodes):
         done = terminated or truncated
 
         # action,reward
-        action = torch.tensor(action, dtype=torch.float32, device=device).view(-1)
+        action = torch.tensor(action, dtype=torch.float32, device=device)
         reward = torch.tensor(reward, dtype=torch.float32, device=device)
         next_state = torch.tensor(next_state, dtype=torch.float32, device=device).unsqueeze(0)
+        # next_state = torch.tensor(next_state, dtype=torch.float32, device=device)
         done = torch.tensor(int(done), dtype=torch.int, device=device)
-
-        memory.add((state, action, reward, next_state, int(done)))
+        # print(state.shape, action.shape, reward.shape, next_state.shape, done.shape)
+        memory.add((state, action, reward, next_state, done))
 
         # Move to the next state
         state = next_state

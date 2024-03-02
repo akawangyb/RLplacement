@@ -4,13 +4,20 @@
 # 描述: 基于优先记忆回放的maddpg解决服务部署和请求调度
 # 作者: WangYuanbo
 # --------------------------------------------------
+# 首先搞清楚ddpg的流程
+# 有两个网络，一个actor（动作）网络，一个critic（评价）网络
+# 动作网络的给出当前状态下应该执行的动作
+# 评价网络评估这个动作的价值，评价网络的输入是（当前状态，当前动作）
+# 评价网络的更新目标是最小化贝尔曼误差
+# 试图让我们的Critic预测的动作值函数尽可能的接近感知到的长期回报。
+# y_i = r_i + γ * Q(s_{i+1}, a_{i+1})
+# r_i代表了在当前状态 s_i 执行动作 a_i 后得到的奖励，
+# γ 是折扣因子，Q(s_{i+1}, a_{i+1}) 表示执行下一步动作 a_{i+1}
+# 在状态 s_{i+1} 下由目标网络（Target Network）给出的预测动作值。
 
-# --------------------------------------------------
-# 文件名: placing_routing_maddpg
-# 创建时间: 2024/2/28 16:00
-# 描述: 服务部署请求路由的maddpg算法
-# 作者: WangYuanbo
-# --------------------------------------------------
+#  如何更新动作网络了?动作的网络的目的是生成Q值更大的动作,
+# 因此其更新目标就是最小化评价网络Q值的相反数,
+# loss= -torch.mean(self.critic(state,self.actor(state)))
 import argparse
 import os
 import sys
@@ -19,8 +26,8 @@ from datetime import datetime
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 
-from memory.buffer import PrioritizedReplayBuffer
-from placing_routing_env import CustomEnv
+from customENV.placing_routing_env_v1 import CustomEnv
+from memory.buffer import MAPrioritizedReplayBuffer
 from tools import *
 
 
@@ -91,78 +98,27 @@ class MADDPG:
         self.container_number = env.container_number
 
     @property
-    def policies(self):
+    def actors(self):
         return [agt.actor for agt in self.agents]
 
     @property
-    def target_policies(self):
+    def target_actors(self):
         return [agt.target_actor for agt in self.agents]
 
-    def dict_to_np(self, states):
-        # 把所有的数据铺平
-        a = states['server_cpu']
-        b = states['user_request_cpu']
-        # c = np.eye(self.container_number)[states['user_request_imageID']].reshape(-1)
-        c = states['user_request_imageID']
-        d = states['server_storage']
-        e = states['container_storage']
-        f = states['last_placing_action'].reshape(-1)
-
-        states = np.concatenate((a, b, c, d, e, f))
-        states = states.reshape(1, -1)
-        # states = torch.tensor(states, dtype=torch.float).view(1, -1).to(self.device)
-        return states
-
-    def take_action(self, states, explore):
+    def take_action(self, state, explore):
         # routing智能体公用同一个状态
         # placing智能体公用同一个状态
         # routing系统状态是Dict类型，只需要把他处理即可
 
-        states = [self.dict_to_np(state) for state in states]
-
-        states = [torch.tensor(state, dtype=torch.float, device=self.device).view(1, -1)
-                  for state in states]
         return [
-            agent.take_action(state, explore)
-            for agent, state in zip(self.agents, states)
+            agent.take_action(state, explore) for agent in self.agents
         ]
 
     def update(self, sample, i_agent):
         # sample的第一个维度是智能体
-        states, actions, rewards, next_states, dones = sample
-        # 这些数据还是list类型没有换成tensor
-        # batch_size = len(states)
-        # 第一维是智能体数量,第二位是取样批次大小
-        temp_states = []
-        for agent_state in states:
-            agent_state_tensor = []
-            for state in agent_state:
-                agent_state_tensor.append(torch.tensor(self.dict_to_np(state), dtype=torch.float).to(self.device))
-            temp_states.append(torch.cat(agent_state_tensor, dim=0))
-        states = temp_states
-
-        # actions = torch.stack([torch.tensor(action, dtype=torch.float).to(self.device) for action in actions])
-        # for index, action in enumerate(actions):
-        #     print(index, type(action), len(action), action)
-        # actions是一个list，list类型
-        placing_actions = np.array(actions[:self.placing_agents_number])
-        routing_actions = np.array(actions[-self.routing_agents_number:])
-        placing_actions = torch.tensor(placing_actions, dtype=torch.float).to(self.device)
-        routing_actions = torch.tensor(routing_actions, dtype=torch.float).to(self.device)
-        # actions = torch.tensor(actions, dtype=torch.float).to(self.device)
-
-        rewards = torch.stack([torch.tensor(reward, dtype=torch.float).to(self.device) for reward in rewards])
-
-        temp_states = []
-        for agent_state in next_states:
-            agent_state_tensor = []
-            for state in agent_state:
-                agent_state_tensor.append(torch.tensor(self.dict_to_np(state), dtype=torch.float).to(self.device))
-            temp_states.append(torch.cat(agent_state_tensor, dim=0))
-        next_states = temp_states
-
-        dones = torch.tensor(dones, dtype=torch.float).view(-1, 1).to(self.device)
-
+        state, placing_actions, routing_actions, rewards, next_state, done = sample
+        batch_size = state.shape[0]
+        # 假设这里的采样已经是i_agent的transition
         cur_agent = self.agents[i_agent]
         # 更新每个智能体的评价网络
         # 更新规则，先用目标网络（策略和评价）计算下一个状态的价值
@@ -173,38 +129,47 @@ class MADDPG:
         # 计算损失之前先把梯度清零
         cur_agent.critic_optimizer.zero_grad()
         # 计算当前智能体的cur_agent.target_actor(next_states)
-        all_target_actions = [
-            onehot_from_logits(agent_critic(next_st))
-            for agent_critic, next_st in zip(self.target_policies, next_states)
+        # 计算target_policy的输入
+        all_next_actions = [
+            onehot_from_logits(agent_actor(next_state))
+            for agent_actor in self.target_actors
         ]
+        target_critic_input = torch.cat((next_state, *all_next_actions), dim=1)
 
-        target_critic_input = torch.cat((*next_states, *all_target_actions), dim=1)
+        immediate_return = cur_agent.target_critic(target_critic_input)
 
-        answer = cur_agent.target_critic(target_critic_input)
-        target_critic_value = rewards[i_agent].view(-1, 1) + self.gamma * answer * (1 - dones[i_agent].view(-1, 1))
-
-        critic_input = torch.cat((*states, *placing_actions, *routing_actions), dim=1)
+        # 这里的第一维是buffer_size
+        delayed_return = rewards[:, i_agent].view(-1, 1) + self.gamma * immediate_return * (1 - done.view(-1, 1))
+        placing_actions = placing_actions.view(batch_size, -1)
+        routing_actions = routing_actions.view(batch_size, -1)
+        critic_input = torch.cat((state, placing_actions, routing_actions), dim=1)
         critic_value = cur_agent.critic(critic_input)
-        critic_loss = self.critic_criterion(critic_value,
-                                            target_critic_value.detach())
+
+        # 计算td_error
+        td_error = torch.abs(critic_value - delayed_return).detach()
+        critic_loss = self.critic_criterion(critic_value, delayed_return.detach())
         critic_loss.backward()
         cur_agent.critic_optimizer.step()
 
-        # 更新策略网络
+        # 更新动作网络
+        # 先计算全体智能体的动作网络生成的动作
         cur_agent.actor_optimizer.zero_grad()
-        cur_actor_out = cur_agent.actor(states[i_agent])
+        cur_actor_out = cur_agent.actor(state)
         cur_act_vf_in = gumbel_softmax(cur_actor_out)
         all_actor_acs = []
-        for i, (pi, _obs) in enumerate(zip(self.policies, states)):
+        for i, agent_actor in enumerate(self.actors):
             if i == i_agent:
                 all_actor_acs.append(cur_act_vf_in)
             else:
-                all_actor_acs.append(onehot_from_logits(pi(_obs)))
-        vf_in = torch.cat((*states, *all_actor_acs), dim=1)
+                all_actor_acs.append(onehot_from_logits(agent_actor(state)))
+
+        vf_in = torch.cat((state, *all_actor_acs), dim=1)
         actor_loss = -cur_agent.critic(vf_in).mean()
         actor_loss += (cur_actor_out ** 2).mean() * 1e-3
         actor_loss.backward()
         cur_agent.actor_optimizer.step()
+
+        return critic_loss.item(), td_error
 
     def update_all_targets(self):
         for agt in self.agents:
@@ -279,19 +244,21 @@ random.seed(0)
 np.random.seed(0)
 torch.manual_seed(0)
 
-# 有两个动作
-replay_buffer = PrioritizedReplayBuffer(
+replay_buffer = MAPrioritizedReplayBuffer(
     state_size=env.state_dim,
-    action_size=2,
-    buffer_size=buffer_size)
-
-# 假设有两个maddpg大agent,一个是routing组长，一个是placing组长,下面的全是员工
+    placing_action_size=env.placing_action_dims[0],
+    routing_action_size=env.routing_action_dims[0],
+    buffer_size=buffer_size,
+    placing_agent_number=env.placing_agents_number,
+    routing_agent_number=env.routing_agents_number,
+    device=device
+)
 
 routing_action_dims = env.routing_action_dims
 placing_action_dims = env.placing_action_dims
 action_dims = placing_action_dims + routing_action_dims
 state_dims = env.state_dims
-critic_input_dim = sum(state_dims) + sum(action_dims)
+critic_input_dim = env.state_dim + sum(action_dims)
 
 maddpg = MADDPG(env=env, action_dims=action_dims, state_dims=state_dims,
                 critic_input_dim=critic_input_dim,
@@ -304,10 +271,15 @@ def evaluate(para_env, maddpg, n_episode=10):
     env = para_env
     returns = np.zeros(env.agents_number)
     for _ in range(n_episode):
-        states, dones = env.reset()
-        while not dones[0]:
-            actions = maddpg.take_action(states, explore=False)
-            next_states, rewards, dones, info = env.step(actions)
+        state, done = env.reset()
+        state = np.concatenate([state[key].reshape(-1) for key in state])
+        state = torch.tensor(state, dtype=torch.float, device=device).view(1, -1)
+        while not done:
+            actions = maddpg.take_action(state, explore=False)
+            next_state, rewards, done, info = env.step(actions)
+            state = next_state
+            state = np.concatenate([state[key].reshape(-1) for key in state])
+            state = torch.tensor(state, dtype=torch.float, device=device).view(1, -1)
             rewards = np.array(rewards)
             returns += rewards * 1.0
     returns = returns / n_episode
@@ -317,40 +289,40 @@ def evaluate(para_env, maddpg, n_episode=10):
 return_list = []  # 记录每一轮的回报（return）
 total_step = 0
 for i_episode in range(num_episodes):
-    states, dones = env.reset()
-    # ep_returns = np.zeros(len(env.agents))
-    while not dones[0]:
-        actions = maddpg.take_action(states, explore=True)
+    state, done = env.reset()
+    # 在这里把state转换成tensor
+    # state是一个dict类型
+    state = np.concatenate([state[key].reshape(-1) for key in state])
+    state = torch.tensor(state, dtype=torch.float, device=device).view(1, -1)
+
+    while not done:
+        actions = maddpg.take_action(state, explore=True)
         # 这里输出的actions是一个np的list
-        next_states, rewards, dones, _ = env.step(actions)
-        # print(rewards)
-        # states 和 next_states 转换成一维的
-        replay_buffer.add((states, actions, rewards, next_states, dones))
-        states = next_states
+        next_state, rewards, done, _ = env.step(actions)
+        # 现在假设使用全局的记忆优先级
+        # 要把action和reward转换成记忆可存储的形式
+        next_state = np.concatenate([next_state[key].reshape(-1) for key in next_state])
+        next_state = torch.tensor(next_state, dtype=torch.float, device=device).view(1, -1)
+
+        placing_actions = actions[:env.placing_agents_number]
+        routing_actions = actions[-env.routing_agents_number:]
+        placing_actions = torch.tensor(np.concatenate(placing_actions).reshape(env.placing_agents_number, -1),
+                                       dtype=torch.float, device=device)
+        routing_actions = torch.tensor(np.concatenate(routing_actions).reshape(env.routing_agents_number, -1),
+                                       dtype=torch.float, device=device)
+
+        replay_buffer.add((state, placing_actions, routing_actions, rewards, next_state, done))
+        state = next_state
         total_step += 1
-        if replay_buffer.size(
-        ) >= minimal_size and total_step % update_interval == 0:
-            sample = replay_buffer.sample(batch_size)
-
-
-            # 原始记忆的形状为（时间步长，智能体数，状态 / 行动 / 奖励）
-            # 按智能体训练的记忆形状为 （智能体数，时间步长，状态/行动/奖励）
-            # 方便获得每个智能体的状态/行动/奖励的序列
-
-            # 这里记忆是按照时间排序的，可以理解为列的维度是时间，
-            # 但是对于智能体的训练，需要分别单独更新
-            # 现在要按智能体排序
-            def stack_array(x):
-
-                rearranged = [[sub_x[i] for sub_x in x]
-                              for i in range(len(x[0]))]
-                return rearranged
-
-
-            sample = [stack_array(x) for x in sample]
-
+        if replay_buffer.real_size >= minimal_size and total_step % update_interval == 0:
+            batch, weights, tree_idxs = replay_buffer.sample(batch_size)
+            all_agents_td_error = []
             for a_i in range(env.agents_number):
-                maddpg.update(sample, a_i)
+                loss, td_error = maddpg.update(batch, a_i)
+                all_agents_td_error.append(td_error)
+            all_agents_td_error = torch.stack(all_agents_td_error, dim=1)
+            all_agents_td_error = torch.sum(all_agents_td_error, dim=1).reshape(-1)
+            replay_buffer.update_priorities(tree_idxs, all_agents_td_error.cpu().numpy())
             maddpg.update_all_targets()
     if (i_episode + 1) % 100 == 0:
         ep_returns = evaluate(env, maddpg, n_episode=100)

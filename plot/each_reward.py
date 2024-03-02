@@ -11,7 +11,7 @@ import numpy as np
 
 # 假设文件名是“rewards.txt”
 # filename = "../log_reserved/routing_agent20240228-12_19_41OK/info.log"
-filename = "../log_reserved/placing_routing_maddpg20240229-11_25_09OK/info.log"
+filename = "../log_reserved/placing_routing_per_maddpg20240302-17_07_26OK/info.log"
 
 episodes = []
 total_rewards = []

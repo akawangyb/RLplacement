@@ -1,0 +1,200 @@
+Episode: 100, total reward: -7.749999999999999
+each agent reward: [-5.03, 1.3, -1.61, 0.82, -2.32, -0.53, -0.56, -0.69, 3.07, -2.2]
+Episode: 200, total reward: -2.4400000000000004
+each agent reward: [0.08, 1.01, -3.0, -1.58, 2.7, -1.33, -1.89, 1.51, 1.89, -1.83]
+Episode: 300, total reward: 6.550000000000001
+each agent reward: [0.74, 0.94, 0.52, -1.15, 3.03, -1.11, -1.24, 1.93, 2.16, 0.73]
+Episode: 400, total reward: 11.35
+each agent reward: [0.48, 1.49, 2.98, -1.99, 2.88, -1.05, -1.12, 1.39, 2.36, 3.93]
+Episode: 500, total reward: 11.02
+each agent reward: [-0.09, 1.46, 1.97, -2.25, 5.13, -0.94, -1.37, 1.78, 2.19, 3.14]
+Episode: 600, total reward: 12.38
+each agent reward: [-0.51, 1.7, 1.49, -1.75, 5.16, -0.2, -1.24, 2.24, 2.66, 2.83]
+Episode: 700, total reward: 12.9
+each agent reward: [-0.17, 1.66, 1.19, -1.69, 4.69, -0.57, -0.63, 2.8, 2.95, 2.67]
+Episode: 800, total reward: 18.31
+each agent reward: [0.17, 2.01, 1.53, -0.2, 4.77, -0.52, -0.39, 3.79, 3.93, 3.22]
+Episode: 900, total reward: 16.79
+each agent reward: [0.13, 1.86, 1.31, -0.68, 4.63, -0.5, -0.44, 3.86, 3.99, 2.63]
+Episode: 1000, total reward: 15.76
+each agent reward: [-0.55, 1.85, 1.43, -1.27, 4.85, -0.55, -0.51, 3.77, 3.85, 2.89]
+Episode: 1100, total reward: 15.669999999999998
+each agent reward: [-0.05, 1.64, 1.43, -1.73, 4.75, -0.27, -0.37, 3.57, 4.01, 2.69]
+Episode: 1200, total reward: 14.92
+each agent reward: [-0.4, 1.59, 1.41, -1.82, 4.8, -0.6, -0.21, 3.53, 3.98, 2.64]
+Episode: 1300, total reward: 16.86
+each agent reward: [-0.22, 1.76, 1.49, -0.79, 4.81, -0.51, -0.28, 3.39, 4.24, 2.97]
+Episode: 1400, total reward: 16.98
+each agent reward: [-0.21, 1.81, 1.26, -0.1, 4.56, -0.52, -0.43, 4.09, 3.87, 2.65]
+Episode: 1500, total reward: 16.3
+each agent reward: [-0.17, 1.3, 1.11, -0.41, 4.63, -0.65, -0.31, 3.58, 4.25, 2.97]
+Episode: 1600, total reward: 17.19
+each agent reward: [-0.11, 1.61, 1.46, -0.43, 4.82, -0.62, -0.47, 3.74, 4.24, 2.95]
+Episode: 1700, total reward: 17.02
+each agent reward: [-0.04, 1.82, 1.41, -0.18, 4.8, -0.49, -0.46, 3.44, 3.73, 2.99]
+Episode: 1800, total reward: 16.98
+each agent reward: [-0.18, 1.44, 1.16, -0.24, 5.02, -0.57, -0.36, 3.57, 4.29, 2.85]
+Episode: 1900, total reward: 17.21
+each agent reward: [-0.41, 1.92, 1.38, -0.46, 4.86, -0.39, -0.27, 3.64, 4.25, 2.69]
+Episode: 2000, total reward: 17.33
+each agent reward: [-0.27, 1.85, 1.55, -0.43, 4.76, -0.42, -0.37, 3.73, 4.13, 2.8]
+Episode: 2100, total reward: 21.620000000000005
+each agent reward: [-0.14, 1.7, 3.12, -0.34, 6.12, -0.52, -0.29, 3.83, 4.22, 3.92]
+Episode: 2200, total reward: 21.22
+each agent reward: [-0.18, 1.48, 2.88, -0.41, 6.12, -0.43, -0.49, 3.94, 4.23, 4.08]
+Episode: 2300, total reward: 22.72
+each agent reward: [-0.38, 1.95, 3.32, -0.24, 6.01, -0.14, -0.07, 3.74, 4.26, 4.27]
+Episode: 2400, total reward: 22.729999999999997
+each agent reward: [-0.43, 2.02, 3.51, -0.17, 6.35, -0.56, -0.44, 3.87, 4.23, 4.35]
+Episode: 2500, total reward: 22.52
+each agent reward: [-0.1, 1.59, 3.4, -0.36, 6.17, -0.3, -0.29, 3.89, 4.23, 4.29]
+Episode: 2600, total reward: 22.32
+each agent reward: [-0.19, 1.11, 3.54, -0.15, 6.27, -0.44, -0.19, 3.67, 4.19, 4.51]
+Episode: 2700, total reward: 22.0
+each agent reward: [-0.05, 0.91, 3.49, -0.18, 5.99, -0.3, -0.25, 3.84, 4.34, 4.21]
+Episode: 2800, total reward: 20.96
+each agent reward: [-0.19, 0.16, 3.53, -0.32, 6.17, -0.38, -0.36, 3.62, 4.41, 4.32]
+Episode: 2900, total reward: 20.82
+each agent reward: [-0.22, 0.27, 3.28, -0.24, 6.21, -0.38, -0.17, 3.7, 4.14, 4.23]
+Episode: 3000, total reward: 21.29
+each agent reward: [0.0, 0.64, 3.38, -0.13, 6.27, -0.37, -0.47, 3.58, 4.15, 4.24]
+Episode: 3100, total reward: 21.779999999999998
+each agent reward: [-0.01, 0.74, 3.56, -0.3, 6.14, -0.18, -0.17, 3.76, 3.86, 4.38]
+Episode: 3200, total reward: 21.910000000000004
+each agent reward: [-0.13, 0.84, 3.35, -0.2, 6.15, -0.33, -0.28, 4.29, 3.98, 4.24]
+Episode: 3300, total reward: 22.21
+each agent reward: [-0.21, 1.39, 3.44, -0.17, 6.33, -0.49, -0.37, 3.62, 4.38, 4.29]
+Episode: 3400, total reward: 20.87
+each agent reward: [-0.36, 1.02, 3.36, -0.27, 5.98, -0.43, -0.57, 3.74, 4.13, 4.27]
+Episode: 3500, total reward: 21.81
+each agent reward: [-0.03, 0.91, 3.52, -0.19, 6.18, -0.38, -0.18, 3.8, 3.97, 4.21]
+Episode: 3600, total reward: 21.880000000000003
+each agent reward: [-0.16, 0.77, 3.8, -0.13, 6.11, -0.2, -0.35, 3.76, 3.86, 4.42]
+Episode: 3700, total reward: 21.7
+each agent reward: [-0.26, 1.01, 3.36, -0.19, 6.0, -0.49, -0.18, 3.84, 4.17, 4.44]
+Episode: 3800, total reward: 21.849999999999998
+each agent reward: [-0.07, 1.25, 3.58, -0.36, 5.95, -0.55, -0.3, 3.95, 4.06, 4.34]
+Episode: 3900, total reward: 21.39
+each agent reward: [-0.13, 0.86, 3.52, -0.23, 6.07, -0.41, -0.43, 3.93, 4.1, 4.11]
+Episode: 4000, total reward: 21.630000000000003
+each agent reward: [-0.06, 0.85, 3.55, -0.43, 6.41, -0.37, -0.45, 3.57, 4.32, 4.24]
+Episode: 4100, total reward: 20.55
+each agent reward: [-0.08, 0.6, 3.34, -0.44, 6.16, -0.58, -0.38, 3.63, 4.19, 4.11]
+Episode: 4200, total reward: 21.39
+each agent reward: [-0.09, 1.0, 3.13, -0.37, 6.12, -0.36, -0.45, 3.83, 4.24, 4.34]
+Episode: 4300, total reward: 21.690000000000005
+each agent reward: [-0.17, 1.05, 3.49, -0.25, 6.11, -0.53, -0.06, 3.96, 3.99, 4.1]
+Episode: 4400, total reward: 20.63
+each agent reward: [-0.24, 0.88, 3.15, -0.36, 6.18, -0.35, -0.43, 3.46, 4.14, 4.2]
+Episode: 4500, total reward: 21.62
+each agent reward: [0.17, 1.34, 3.23, -0.46, 6.0, -0.38, -0.48, 3.84, 4.09, 4.27]
+Episode: 4600, total reward: 21.43
+each agent reward: [-0.38, 0.84, 3.31, -0.14, 6.11, -0.5, -0.16, 4.2, 4.04, 4.11]
+Episode: 4700, total reward: 21.080000000000002
+each agent reward: [-0.2, 0.41, 3.49, -0.19, 6.05, -0.31, -0.39, 3.81, 4.29, 4.12]
+Episode: 4800, total reward: 22.47
+each agent reward: [-0.07, 1.07, 3.42, -0.12, 6.36, -0.21, -0.26, 3.66, 4.24, 4.38]
+Episode: 4900, total reward: 21.22
+each agent reward: [0.03, 0.99, 3.29, -0.43, 5.92, -0.38, -0.31, 3.74, 4.11, 4.26]
+Episode: 5000, total reward: 21.39
+each agent reward: [-0.29, 0.95, 3.51, -0.28, 6.13, -0.42, -0.26, 3.5, 4.14, 4.41]
+Episode: 5100, total reward: 21.639999999999997
+each agent reward: [-0.28, 1.22, 3.58, -0.37, 6.04, -0.43, -0.21, 3.66, 4.12, 4.31]
+Episode: 5200, total reward: 22.160000000000004
+each agent reward: [-0.26, 1.22, 3.37, -0.2, 6.36, -0.52, -0.28, 3.87, 4.44, 4.16]
+Episode: 5300, total reward: 21.47
+each agent reward: [-0.28, 0.86, 3.57, -0.1, 6.04, -0.38, -0.22, 3.64, 4.13, 4.21]
+Episode: 5400, total reward: 21.110000000000003
+each agent reward: [-0.11, 0.79, 3.36, -0.18, 6.12, -0.53, -0.44, 3.72, 4.1, 4.28]
+Episode: 5500, total reward: 21.199999999999996
+each agent reward: [0.01, 1.01, 3.44, -0.48, 5.96, -0.47, -0.3, 3.85, 4.03, 4.15]
+Episode: 5600, total reward: 21.630000000000003
+each agent reward: [-0.08, 0.86, 3.4, -0.24, 6.2, -0.28, -0.26, 3.58, 4.29, 4.16]
+Episode: 5700, total reward: 21.71
+each agent reward: [-0.17, 0.89, 3.56, -0.14, 6.23, -0.52, -0.29, 3.73, 4.2, 4.22]
+Episode: 5800, total reward: 22.07
+each agent reward: [-0.21, 1.01, 3.64, -0.28, 6.26, -0.28, -0.27, 3.7, 4.01, 4.49]
+Episode: 5900, total reward: 21.939999999999998
+each agent reward: [-0.05, 0.86, 3.45, -0.16, 6.31, -0.42, -0.3, 3.67, 4.09, 4.49]
+Episode: 6000, total reward: 21.550000000000004
+each agent reward: [-0.34, 0.87, 3.47, -0.23, 6.3, -0.37, -0.04, 3.39, 4.01, 4.49]
+Episode: 6100, total reward: 20.74
+each agent reward: [-0.18, 0.55, 3.02, -0.07, 6.06, -0.53, -0.26, 3.78, 3.99, 4.38]
+Episode: 6200, total reward: 22.05
+each agent reward: [-0.21, 1.12, 3.8, -0.31, 6.19, -0.51, -0.3, 3.7, 4.38, 4.19]
+Episode: 6300, total reward: 21.47
+each agent reward: [-0.25, 1.12, 3.34, -0.44, 6.19, -0.44, -0.31, 3.99, 4.14, 4.13]
+Episode: 6400, total reward: 21.34
+each agent reward: [-0.04, 0.78, 3.22, -0.26, 5.77, -0.51, -0.29, 3.86, 4.5, 4.31]
+Episode: 6500, total reward: 21.51
+each agent reward: [-0.26, 0.92, 3.3, -0.33, 6.22, -0.35, -0.53, 3.92, 4.18, 4.44]
+Episode: 6600, total reward: 20.8
+each agent reward: [-0.15, 1.09, 3.27, -0.55, 6.15, -0.67, -0.35, 3.76, 3.87, 4.38]
+Episode: 6700, total reward: 22.22
+each agent reward: [-0.14, 0.72, 3.66, -0.13, 6.27, -0.41, -0.1, 3.93, 4.34, 4.08]
+Episode: 6800, total reward: 21.62
+each agent reward: [-0.23, 0.94, 3.27, -0.28, 6.24, -0.39, -0.24, 4.06, 3.93, 4.32]
+Episode: 6900, total reward: 21.62
+each agent reward: [-0.09, 1.0, 3.18, -0.34, 6.36, -0.37, -0.18, 3.79, 4.09, 4.18]
+Episode: 7000, total reward: 20.35
+each agent reward: [-0.17, 1.23, 3.16, -0.1, 6.13, -0.39, -1.29, 3.62, 3.92, 4.24]
+Episode: 7100, total reward: 21.08
+each agent reward: [0.06, 0.98, 3.32, -0.14, 5.88, -0.32, -0.57, 3.89, 4.17, 3.81]
+Episode: 7200, total reward: 21.05
+each agent reward: [-0.37, 1.14, 3.26, -0.19, 5.85, -0.25, -0.12, 3.61, 4.25, 3.87]
+Episode: 7300, total reward: 21.7
+each agent reward: [0.31, 1.17, 3.54, -0.22, 5.89, -0.52, -0.27, 3.67, 4.06, 4.07]
+Episode: 7400, total reward: 20.6
+each agent reward: [-0.54, 0.94, 3.33, -0.15, 5.94, -0.37, -0.58, 3.81, 4.07, 4.15]
+Episode: 7500, total reward: 20.67
+each agent reward: [-0.56, 0.89, 3.36, -0.11, 5.88, -0.28, -0.79, 3.74, 4.13, 4.41]
+Episode: 7600, total reward: 20.97
+each agent reward: [-0.3, 0.86, 3.25, -0.22, 6.15, -0.19, -0.9, 4.0, 4.18, 4.14]
+Episode: 7700, total reward: 19.59
+each agent reward: [-0.43, 1.02, 3.36, -0.35, 5.75, -0.56, -0.81, 3.59, 4.04, 3.98]
+Episode: 7800, total reward: 20.049999999999997
+each agent reward: [-1.0, 0.65, 3.65, -0.34, 6.13, -0.39, -0.84, 3.86, 4.11, 4.22]
+Episode: 7900, total reward: 19.83
+each agent reward: [-0.98, 0.95, 3.4, -0.11, 6.18, -0.57, -0.91, 3.64, 4.01, 4.22]
+Episode: 8000, total reward: 19.54
+each agent reward: [-0.81, 0.99, 3.54, -0.37, 6.07, -0.38, -1.18, 3.63, 3.88, 4.17]
+Episode: 8100, total reward: 20.77
+each agent reward: [-0.35, 0.9, 3.2, -0.34, 6.05, -0.3, -0.66, 3.86, 4.02, 4.39]
+Episode: 8200, total reward: 19.89
+each agent reward: [-0.46, 0.87, 3.22, -0.24, 6.11, -0.42, -0.89, 3.5, 4.02, 4.18]
+Episode: 8300, total reward: 19.88
+each agent reward: [-0.77, 0.78, 3.37, 0.08, 6.21, -0.6, -1.02, 3.88, 4.11, 3.84]
+Episode: 8400, total reward: 19.21
+each agent reward: [-0.44, 0.94, 3.22, -0.51, 5.99, -0.53, -0.93, 3.43, 4.08, 3.96]
+Episode: 8500, total reward: 19.380000000000003
+each agent reward: [-0.39, 0.86, 3.44, -0.87, 5.88, -0.28, -0.94, 3.69, 4.07, 3.92]
+Episode: 8600, total reward: 19.580000000000002
+each agent reward: [-0.31, 1.19, 3.19, -0.89, 5.69, -0.37, -0.65, 3.68, 3.9, 4.15]
+Episode: 8700, total reward: 19.1
+each agent reward: [-0.59, 0.44, 3.61, -0.69, 5.99, -0.19, -0.8, 3.57, 3.98, 3.78]
+Episode: 8800, total reward: 18.119999999999997
+each agent reward: [-0.49, 0.65, 3.45, -0.75, 5.77, -0.45, -0.93, 3.19, 3.76, 3.92]
+Episode: 8900, total reward: 17.91
+each agent reward: [-0.61, 0.74, 3.28, -0.73, 6.07, -0.3, -1.27, 3.27, 3.71, 3.75]
+Episode: 9000, total reward: 18.43
+each agent reward: [-0.55, 1.14, 3.1, -1.13, 5.94, -0.61, -1.15, 3.75, 3.78, 4.16]
+Episode: 9100, total reward: 17.73
+each agent reward: [-0.49, 0.7, 3.22, -1.41, 5.81, -0.48, -0.88, 3.37, 3.75, 4.14]
+Episode: 9200, total reward: 17.93
+each agent reward: [-0.34, 1.02, 3.18, -1.49, 5.71, -0.25, -1.01, 3.25, 3.87, 3.99]
+Episode: 9300, total reward: 18.06
+each agent reward: [-0.63, 0.73, 3.4, -1.56, 5.93, -0.4, -0.78, 3.46, 3.88, 4.03]
+Episode: 9400, total reward: 17.77
+each agent reward: [-0.68, 0.94, 3.38, -1.31, 5.7, -0.46, -1.2, 3.66, 3.95, 3.79]
+Episode: 9500, total reward: 18.22
+each agent reward: [-0.53, 0.83, 3.02, -1.37, 5.9, -0.42, -0.72, 3.8, 3.76, 3.95]
+Episode: 9600, total reward: 17.67
+each agent reward: [-0.86, 0.86, 3.47, -1.37, 5.97, -0.49, -1.15, 3.41, 3.76, 4.07]
+Episode: 9700, total reward: 17.57
+each agent reward: [-0.78, 0.54, 3.49, -1.65, 5.92, -0.56, -0.8, 3.66, 3.83, 3.92]
+Episode: 9800, total reward: 17.15
+each agent reward: [-1.0, 1.01, 3.54, -1.46, 5.89, -0.21, -1.45, 3.22, 3.52, 4.09]
+Episode: 9900, total reward: 17.29
+each agent reward: [-0.61, 0.5, 3.52, -1.54, 5.84, -0.46, -0.9, 3.39, 3.59, 3.96]
+Episode: 10000, total reward: 17.78
+each agent reward: [-0.56, 0.66, 3.18, -1.49, 6.14, -0.42, -0.87, 3.59, 3.76, 3.79]
