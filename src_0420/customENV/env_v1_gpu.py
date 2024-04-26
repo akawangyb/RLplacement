@@ -11,10 +11,8 @@
 # container_info是一个一维数组 [container_id]['storage']表示容器的存储大小
 # container_info是一个一维数组 [container_id]['pulling']表示容器的拉取延迟
 from collections import namedtuple
-from copy import deepcopy
 
 import gym
-import numpy as np
 import torch
 import yaml
 from gym import spaces
@@ -72,10 +70,12 @@ class CustomEnv(gym.Env):
         self.edge_delay = config.edge_delay
 
         # 定义请求信息和服务器信息
-        self.user_request_info = torch.tensor(get_user_request_info(self.end_timestamp, self.user_number)).to(
-            self.device)
-        self.server_info = torch.tensor(get_server_info(self.server_number)).to(self.device)
-        self.container_info = torch.tensor(get_container_info(self.container_number)).to(self.device)
+        self.user_request_info = torch.tensor(get_user_request_info(self.end_timestamp, self.user_number),
+                                              dtype=torch.float32).to(self.device)
+        self.server_info = torch.tensor(get_server_info(self.server_number),
+                                        dtype=torch.float32).to(self.device)
+        self.container_info = torch.tensor(get_container_info(self.container_number),
+                                           dtype=torch.float32).to(self.device)
 
         self.container_storage = self.container_info[:, 0].view(-1)  # 获得其第一列
         self.container_pulling_delay = self.container_info[:, 1].view(-1)  # 获得第二列
@@ -137,6 +137,7 @@ class CustomEnv(gym.Env):
 
         # 定义初始状态,reset里面去定义
         self.state = {}
+        self.state_tensor = None
         self.timestamp = 0
         self.last_placing_state = None
 
@@ -158,30 +159,20 @@ class CustomEnv(gym.Env):
         server_state = self.server_info
         container_state = self.container_info
         user_request_state = self.user_request_info[self.timestamp]
-        last_placing_state = np.zeros((self.server_number, self.container_number))
+        last_placing_state = torch.zeros((self.server_number, self.container_number),
+                                         dtype=torch.float32).to(self.device)
         self.state = {
             "server_state": server_state,
             "container_state": container_state,
             "user_request_state": user_request_state,
             'last_placing_state': last_placing_state
         }
-        # # # 直接把一整变成tensor
-        # # user_request_state_df = pd.read_csv(user_request_info_dir)
-        # # user_request_state_df.drop('timestamp', inplace=True, axis=1)
-        # # user_request_state_df.columns = [None] * len(user_request_state_df.columns)
-        # # user_request_state_data = user_request_state_df.to_numpy()
-        # # user_request_state = torch.tensor(user_request_state_data).to(self.device)
-        # #
-        # # 上一时刻的部署决策
-        # last_placing_action = np.zeros((self.server_number, self.container_number))
-        # # self.last_placing_state = torch.tensor(last_placing_action).to(self.device)
-        # # last_placing_action = self.last_placing_state.view(-1)
-        # #
-        # # # 取出当前时刻的用户请求
-        # # now_request_state = user_request_state[0]
-        # #
-        # # self.state = torch.concat((now_request_state, container_state, server_state, last_placing_action), dim=0)
-        return self.state, False
+
+        self.state_tensor = torch.concat(
+            (user_request_state.view(-1), container_state.view(-1), server_state.view(-1), last_placing_state.view(-1)))
+        # for key, value in self.state.items():
+        #     print(key, value.shape)
+        return self.state_tensor.view(1, -1), False
 
     def step(self, action):
         # 传入一组动作，根据系统当前的状态，输出下一个观察空间
@@ -202,21 +193,22 @@ class CustomEnv(gym.Env):
             routing_action=routing_action)
 
         # 更新系统状态
-        now_placing_action = deepcopy(placing_action)
+        now_placing_action = placing_action.clone
         state = self.state
         # 更新请求状态
         state['user_request_state'] = self.user_request_info[self.timestamp]
 
-        for server_id, container_list in enumerate(now_placing_action):
-            if not is_valid_placing_action[server_id]:
-                now_placing_action[server_id] = [0] * len(container_list)
+        now_placing_action[~is_valid_placing_action, :] = 0
         # 更新placing状态
         state['last_placing_state'] = now_placing_action
 
         self.state = state
-        info = placing_rewards + routing_rewards
-        info = -np.array(info)
-        rewards = sum(info)
+        info = {
+            'placing_rewards': placing_rewards,
+            'routing_rewards': routing_rewards
+        }
+        # rewards 写成一个张量形式
+        rewards = torch.concat([placing_rewards, routing_rewards])
         done = False
         self.timestamp += 1
         if self.timestamp == self.end_timestamp:
@@ -229,7 +221,7 @@ class CustomEnv(gym.Env):
         :param placing_action: 一个二维张量，server_number* container_number
         :return: placing_rewards, is_valid_placing_action，【server_number】张量
         """
-        server_storage_demand = placing_action.clone()
+        server_storage_demand = placing_action.clone().float()
 
         server_storage_demand *= self.container_storage
 
@@ -258,63 +250,83 @@ class CustomEnv(gym.Env):
         :param placing_action: server_number * container_number张量
         :param is_valid_placing_action:  server_number 张量
         :param routing_action: routing_action是一个一维[user_number],每个值表示这个用户请求由哪个服务器完成
+        routing奖励计算，
+        有以下几种情况
+        1. 路由到云
+        2. 路由到边，但是边服务器的存储资源不够
+        3. 路由到边，但是边服务器没有部署相应的镜像
+        4. 路由到边，但是边服务器的计算资源总量超过了
+
         """
+        print(placing_action, routing_action)
+        # 假设 user_number, server_number, penalty, cloud_delay, edge_delay 已经正确初始化
+        routing_rewards = torch.zeros(self.user_number)
+        is_valid_routing_action = torch.zeros(self.user_number)
 
-        routing_rewards = [0] * self.user_number
+        resource_demand = torch.zeros((self.server_number, 4))
 
-        # 首先是要检查每一个routing_action是不是合法的，然后根据
-        is_valid_routing_action = [0] * self.user_number
-        # 0 表示待定，-1表示非法，1表示路由到云且合法，2表示路由到边且合法
-        # 如果路由到云或者路由到非法server，直接是false
+        # 路由到云
+        cloud_routing_mask = (routing_action == self.server_number)
+        print(cloud_routing_mask)
+        is_valid_routing_action[cloud_routing_mask] = 1
 
-        for user_id, server_id in enumerate(routing_action):
-            if server_id == self.server_number:  # 路由到云
-                is_valid_routing_action[user_id] = 1
-            elif not is_valid_placing_action[server_id]:
-                is_valid_routing_action[user_id] = -1
-            else:  # 如果路由到边，需要边上部署了容器
-                image_id = int(self.user_request_info[self.timestamp][user_id][0])
-                if placing_action[server_id][image_id] == 0:  # 没有部署相应的镜像，直接给-1，如果部署了，留给下一步检测
-                    is_valid_routing_action[user_id] = -1
+        # 服务器非法
+        # print(is_valid_placing_action) tensor([True, True, True])
+        # print(routing_action) tensor([0, 3, 2, 3, 2, 3, 3, 1, 3, 0])
+        # 用routing_action  去索引is_valid_placing_action
 
-        # 计算每个服务器的resource_demand, 考虑4种资源类型
-        resource_demand = np.zeros((self.server_number, 4))
-        for user_id, server_id in enumerate(routing_action):
-            if is_valid_routing_action[user_id] == 0:  # 待确认的用户路由
-                resource_demand[server_id][0] += self.user_request_info[self.timestamp][user_id][1]  # cpu
-                resource_demand[server_id][1] += self.user_request_info[self.timestamp][user_id][2]  # mem
-                resource_demand[server_id][2] += self.user_request_info[self.timestamp][user_id][3]  # net-in
-                resource_demand[server_id][3] += self.user_request_info[self.timestamp][user_id][4]  # net-out
+        # 先创建一个拓展版的isvalid_placing_action
+        # 使用 torch.full 创建一个与 max_index 大小相同的 tensor，并全部填充 True
+        extended_is_valid_placing_action = torch.full((self.server_number + 1,), True)
 
-        for user_id, server_id in enumerate(routing_action):
-            if is_valid_routing_action[user_id] == 0:
-                if (
-                        resource_demand[server_id][0] <= self.server_info[server_id][0]  # cpu
-                        and resource_demand[server_id][1] <= self.server_info[server_id][1]  # mem
-                        and resource_demand[server_id][2] <= self.server_info[server_id][2]  # net-in
-                        and resource_demand[server_id][3] <= self.server_info[server_id][3]  # net-out
-                ):
-                    is_valid_routing_action[user_id] = 2
-                else:
-                    is_valid_routing_action[user_id] = -1
+        # 将 is_valid_placing_action 的值复制到对应的位置
+        extended_is_valid_placing_action[0:len(is_valid_placing_action)] = is_valid_placing_action
 
-        for user_id, is_valid in enumerate(is_valid_routing_action):
-            if is_valid_routing_action[user_id] == -1:
-                routing_rewards[user_id] = self.penalty
-            elif is_valid_routing_action[user_id] == 1:  # 路由到云，奖励是云的传输延迟+计算延迟
-                routing_rewards[user_id] = self.cloud_delay + self.user_request_info[self.timestamp][user_id][5]  # lat
-            else:  # 路由到边，奖励是边的传输延迟+计算延迟*干扰系数
-                routing_rewards[user_id] = self.edge_delay + self.user_request_info[self.timestamp][user_id][5]  # lat
+        invalid_edge_server_storage_mask = ~ extended_is_valid_placing_action[routing_action]
+        print("invalid_edge_server: ", invalid_edge_server_storage_mask)
+        is_valid_routing_action[invalid_edge_server_storage_mask] = -1
 
+        # 边缘服务器上没有部署相应的镜像
+        image_id = self.user_request_info[self.timestamp].long()[:, 0]  # 设置 image_id
+        # 拓展placing_action
+        expanded_placing_action = torch.ones((placing_action.shape[0] + 1, placing_action.shape[1]), dtype=torch.int)
+        expanded_placing_action[0:placing_action.shape[0], 0:placing_action.shape[1]] = placing_action
+
+        not_deployed_mask = expanded_placing_action[routing_action, image_id] == 0
+        print("not_deployed ", not_deployed_mask)
+        # placing_action,二维tensor
+        # routing_action,image_id一维tensor，分别用来索引placing_action的第一维和第二维
+
+        invalid_routing = invalid_edge_server_storage_mask | not_deployed_mask
+        is_valid_routing_action[invalid_routing] = -1
+
+        # 计算每个服务器的资源需求
+        valid_routing = is_valid_routing_action == 0
+        print("valid_routing: ", valid_routing)
+        demand_servers = routing_action[valid_routing]
+        resource_demand.index_add_(0, demand_servers, self.user_request_info[self.timestamp, valid_routing, 1:5])
+
+        # 检查每个服务器是否有足够的资源
+        unfulfilled_demand = torch.any(resource_demand > self.server_info[:, 0:4], dim=1)  # 取出前4列比较
+        print("unfulfilled_demand: ", unfulfilled_demand)
+        insufficient_resource = unfulfilled_demand[demand_servers]
+        print("insufficient_resource: ", insufficient_resource)
+        is_valid_routing_action[valid_routing & insufficient_resource] = -1
+        is_valid_routing_action[valid_routing & ~insufficient_resource] = 2
+
+        # 对于非法的路由操作，罚分
+        invalid_routing = is_valid_routing_action == -1
+        routing_rewards[invalid_routing] = self.penalty
+
+        # 对于路由到云的用户，奖励是云的传输延迟+计算延迟
+        cloud_routing = is_valid_routing_action == 1
+        routing_rewards[cloud_routing] = self.cloud_delay + self.user_request_info[self.timestamp, cloud_routing, 5]
+
+        # 对于路由到边缘服务器的用户，奖励是边缘服务器的传输延迟+计算延迟
+        edge_routing = is_valid_routing_action == 2
+        routing_rewards[edge_routing] = self.edge_delay + self.user_request_info[self.timestamp, edge_routing, 5]
 
         return routing_rewards, is_valid_routing_action
-
-    def state_to_tensor(self):
-        state = self.state
-        state_list = []
-        for key, value in state.items():
-            state_list.append(value.reshape(-1))
-        return torch.tensor(np.concatenate(state_list), dtype=torch.float32)
 
 
 if __name__ == '__main__':
