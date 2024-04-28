@@ -77,8 +77,8 @@ class CustomEnv(gym.Env):
         self.container_info = torch.tensor(get_container_info(self.container_number),
                                            dtype=torch.float32).to(self.device)
 
-        self.container_storage = self.container_info[:, 0].view(-1)  # 获得其第一列
-        self.container_pulling_delay = self.container_info[:, 1].view(-1)  # 获得第二列
+        self.container_storage = self.container_info[:, 0].to(self.device).view(-1)  # 获得其第一列
+        self.container_pulling_delay = self.container_info[:, 1].to(self.device).view(-1)  # 获得第二列
 
         self.placing_agents_number = self.server_number
         self.routing_agents_number = self.user_number
@@ -169,7 +169,11 @@ class CustomEnv(gym.Env):
         }
 
         self.state_tensor = torch.concat(
-            (user_request_state.view(-1), container_state.view(-1), server_state.view(-1), last_placing_state.view(-1)))
+            (user_request_state.view(-1),
+             container_state.view(-1),
+             server_state.view(-1),
+             last_placing_state.view(-1))
+        ).to(self.device)
         # for key, value in self.state.items():
         #     print(key, value.shape)
         return self.state_tensor.view(1, -1), False
@@ -193,7 +197,7 @@ class CustomEnv(gym.Env):
             routing_action=routing_action)
 
         # 更新系统状态
-        now_placing_action = placing_action.clone
+        now_placing_action = placing_action
         state = self.state
         # 更新请求状态
         state['user_request_state'] = self.user_request_info[self.timestamp]
@@ -203,17 +207,21 @@ class CustomEnv(gym.Env):
         state['last_placing_state'] = now_placing_action
 
         self.state = state
-        info = {
-            'placing_rewards': placing_rewards,
-            'routing_rewards': routing_rewards
-        }
         # rewards 写成一个张量形式
-        rewards = torch.concat([placing_rewards, routing_rewards])
-        done = False
+        rewards = torch.concat([placing_rewards, routing_rewards]).to(self.device)
+        rewards = -rewards
+        done = torch.full((1,), False).to(self.device)
         self.timestamp += 1
         if self.timestamp == self.end_timestamp:
-            done = True
-        return self.state, rewards, done, info
+            done = ~ done
+        self.state_tensor = torch.concat(
+            (self.state['user_request_state'].view(-1),
+             self.state['container_state'].view(-1),
+             self.state['server_state'].view(-1),
+             self.state['last_placing_state'].view(-1)
+             )
+        ).to(self.device)
+        return self.state_tensor.view(1, -1), rewards, done, rewards
 
     def cal_placing_rewards(self, placing_action):
         """
@@ -221,7 +229,7 @@ class CustomEnv(gym.Env):
         :param placing_action: 一个二维张量，server_number* container_number
         :return: placing_rewards, is_valid_placing_action，【server_number】张量
         """
-        server_storage_demand = placing_action.clone().float()
+        server_storage_demand = placing_action.clone().float().to(self.device)
 
         server_storage_demand *= self.container_storage
 
@@ -240,7 +248,7 @@ class CustomEnv(gym.Env):
 
         # 假设你已经有了 is_valid_placing_action，placing_rewards，以及 self.penalty
         placing_rewards = torch.where(is_valid_placing_action, placing_rewards,
-                                      torch.full_like(is_valid_placing_action, self.penalty))
+                                      torch.full_like(is_valid_placing_action, self.penalty).to(self.device))
 
         return placing_rewards, is_valid_placing_action
 
@@ -258,73 +266,68 @@ class CustomEnv(gym.Env):
         4. 路由到边，但是边服务器的计算资源总量超过了
 
         """
-        print(placing_action, routing_action)
         # 假设 user_number, server_number, penalty, cloud_delay, edge_delay 已经正确初始化
-        routing_rewards = torch.zeros(self.user_number)
-        is_valid_routing_action = torch.zeros(self.user_number)
 
-        resource_demand = torch.zeros((self.server_number, 4))
+        is_valid_routing_action = torch.zeros(self.user_number).to(self.device)
 
-        # 路由到云
+        resource_demand = torch.zeros((self.server_number, 4)).to(self.device)
+
+        # 1. 路由到云
         cloud_routing_mask = (routing_action == self.server_number)
-        print(cloud_routing_mask)
-        is_valid_routing_action[cloud_routing_mask] = 1
 
-        # 服务器非法
-        # print(is_valid_placing_action) tensor([True, True, True])
-        # print(routing_action) tensor([0, 3, 2, 3, 2, 3, 3, 1, 3, 0])
+        # 2. 服务器非法
         # 用routing_action  去索引is_valid_placing_action
 
         # 先创建一个拓展版的isvalid_placing_action
         # 使用 torch.full 创建一个与 max_index 大小相同的 tensor，并全部填充 True
-        extended_is_valid_placing_action = torch.full((self.server_number + 1,), True)
-
+        extended_is_valid_placing_action = torch.full((self.server_number + 1,), True).to(self.device)
         # 将 is_valid_placing_action 的值复制到对应的位置
-        extended_is_valid_placing_action[0:len(is_valid_placing_action)] = is_valid_placing_action
+        extended_is_valid_placing_action[0:self.server_number] = is_valid_placing_action
+        invalid_storage_mask = ~ extended_is_valid_placing_action[routing_action]
+        # is_valid_routing_action[invalid_storage_mask] = -1
 
-        invalid_edge_server_storage_mask = ~ extended_is_valid_placing_action[routing_action]
-        print("invalid_edge_server: ", invalid_edge_server_storage_mask)
-        is_valid_routing_action[invalid_edge_server_storage_mask] = -1
-
-        # 边缘服务器上没有部署相应的镜像
+        # 3.边缘服务器上没有部署相应的镜像
         image_id = self.user_request_info[self.timestamp].long()[:, 0]  # 设置 image_id
         # 拓展placing_action
-        expanded_placing_action = torch.ones((placing_action.shape[0] + 1, placing_action.shape[1]), dtype=torch.int)
+        expanded_placing_action = torch.ones((placing_action.shape[0] + 1, placing_action.shape[1]), dtype=torch.int).to(self.device)
         expanded_placing_action[0:placing_action.shape[0], 0:placing_action.shape[1]] = placing_action
 
         not_deployed_mask = expanded_placing_action[routing_action, image_id] == 0
-        print("not_deployed ", not_deployed_mask)
-        # placing_action,二维tensor
+        # placing_action,二维tensor,先将其拓展
         # routing_action,image_id一维tensor，分别用来索引placing_action的第一维和第二维
 
-        invalid_routing = invalid_edge_server_storage_mask | not_deployed_mask
-        is_valid_routing_action[invalid_routing] = -1
-
-        # 计算每个服务器的资源需求
-        valid_routing = is_valid_routing_action == 0
-        print("valid_routing: ", valid_routing)
-        demand_servers = routing_action[valid_routing]
-        resource_demand.index_add_(0, demand_servers, self.user_request_info[self.timestamp, valid_routing, 1:5])
+        # 4. 计算每个服务器的资源需求
+        valid_edge_routing_mask = (~cloud_routing_mask & ~invalid_storage_mask & ~not_deployed_mask)
+        demand_servers = routing_action[valid_edge_routing_mask]
+        resource_demand.index_add_(0, demand_servers,
+                                   self.user_request_info[self.timestamp, valid_edge_routing_mask, 1:5])
 
         # 检查每个服务器是否有足够的资源
         unfulfilled_demand = torch.any(resource_demand > self.server_info[:, 0:4], dim=1)  # 取出前4列比较
-        print("unfulfilled_demand: ", unfulfilled_demand)
-        insufficient_resource = unfulfilled_demand[demand_servers]
-        print("insufficient_resource: ", insufficient_resource)
-        is_valid_routing_action[valid_routing & insufficient_resource] = -1
-        is_valid_routing_action[valid_routing & ~insufficient_resource] = 2
 
-        # 对于非法的路由操作，罚分
-        invalid_routing = is_valid_routing_action == -1
-        routing_rewards[invalid_routing] = self.penalty
+        # 拓展
+        extended_unfulfilled_demand = torch.full((self.server_number + 1,), False).to(self.device)
+        extended_unfulfilled_demand[0:self.server_number] = unfulfilled_demand
 
-        # 对于路由到云的用户，奖励是云的传输延迟+计算延迟
-        cloud_routing = is_valid_routing_action == 1
-        routing_rewards[cloud_routing] = self.cloud_delay + self.user_request_info[self.timestamp, cloud_routing, 5]
+        insufficient_resource_mask = extended_unfulfilled_demand[routing_action]
 
-        # 对于路由到边缘服务器的用户，奖励是边缘服务器的传输延迟+计算延迟
-        edge_routing = is_valid_routing_action == 2
-        routing_rewards[edge_routing] = self.edge_delay + self.user_request_info[self.timestamp, edge_routing, 5]
+        # 计算奖励
+        routing_rewards = torch.zeros(self.user_number).to(self.device)
+
+        # 1. 对于路由到云的用户，奖励是云的传输延迟+计算延迟
+        routing_rewards[cloud_routing_mask] = self.cloud_delay + self.user_request_info[
+            self.timestamp, cloud_routing_mask, 5]
+
+        # 2. 对于路由到边,正确
+        valid_edge_routing_mask = (
+                ~cloud_routing_mask & ~invalid_storage_mask & ~not_deployed_mask & ~insufficient_resource_mask)
+        routing_rewards[valid_edge_routing_mask] = self.edge_delay + self.user_request_info[
+            self.timestamp, valid_edge_routing_mask, 5]
+
+        # 3. 路由到边，不正确
+        invalid_edge_routing_mask = (
+                ~ cloud_routing_mask & (invalid_storage_mask | not_deployed_mask | insufficient_resource_mask))
+        routing_rewards[invalid_edge_routing_mask] = self.penalty
 
         return routing_rewards, is_valid_routing_action
 

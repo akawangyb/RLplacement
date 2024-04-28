@@ -5,7 +5,6 @@
 # 作者: WangYuanbo
 # --------------------------------------------------
 import collections
-import os
 import random
 from collections import deque, namedtuple
 
@@ -18,58 +17,59 @@ import torch.nn.functional as F
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
-def get_user_request_info(user_number):
-    user_request_info = []
-    path = '../data/user_request_info.csv'
+def get_user_request_info(timestamp, user_number):
+    """
+
+    :param user_number:
+    :return: 返回一个三维数组，第一维是时间戳，第二维是用户id，第三维表示资源和延迟
+    """
+    user_request_info = np.zeros((timestamp, user_number, 6))  # 6分别是imageID,cpu,mem,net-in,net-out,lat
+    path = 'data/user_request_info.csv'
     key = 'timestamp'
-    print(os.getcwd())
     data_frame = pd.read_csv(path)
-    data_frame.set_index(key, inplace=True)
-    data_dict = data_frame.to_dict('index')
-    for ts, value in data_dict.items():
+
+    for index, row in data_frame.iterrows():
         # 第一个key是ts
-        ts_request = []
-        for index in range(user_number):
-            ts_request.append({
-                'cpu': value['user_' + str(index) + '_cpu'],
-                'imageID': int(value['user_' + str(index) + '_image']),
-            })
-        user_request_info.append(ts_request)
+        # ts_request = []
+        if index >= timestamp:
+            break
+        for user_id in range(user_number):
+            user_request_info[index, user_id, 0] = data_frame.loc[index, 'user_' + str(user_id) + '_image']
+            user_request_info[index, user_id, 1] = data_frame.loc[index, 'user_' + str(user_id) + '_cpu']
+            user_request_info[index, user_id, 2] = data_frame.loc[index, 'user_' + str(user_id) + '_mem']
+            user_request_info[index, user_id, 3] = data_frame.loc[index, 'user_' + str(user_id) + '_net-in']
+            user_request_info[index, user_id, 4] = data_frame.loc[index, 'user_' + str(user_id) + '_net-out']
+            user_request_info[index, user_id, 5] = data_frame.loc[index, 'user_' + str(user_id) + '_lat']
+
     return user_request_info
 
 
-def get_server_info():
-    server_info = []
-    path = '../data/server_info.csv'
-    key = 'server_id'
+def get_server_info(server_number):
+    """
+    :return:返回一个二维数组，第一维是 服务器id，第二维表示资源
+    """
+    server_info = np.zeros((server_number, 5))  # 5分别是cpu,mem,net-in,net-out,storage
+    path = 'data/server_info.csv'
     data_frame = pd.read_csv(path)
-    data_frame.set_index(key, inplace=True)
-    data_dict = data_frame.to_dict('index')
-    for ts, value in data_dict.items():
-        # 第一个key是ts
-        ts_request = []
-        # print(key, value)
-        server_info.append({
-            'cpu': value['cpu_size'],
-            'storage': value['storage_size']
-        })
+    for server_id, row in data_frame.iterrows():
+        server_info[server_id][0] = data_frame.loc[server_id, 'cpu_size']
+        server_info[server_id, 1] = data_frame.loc[server_id, 'mem_size']
+        server_info[server_id, 2] = data_frame.loc[server_id, 'net-in_size']
+        server_info[server_id, 3] = data_frame.loc[server_id, 'net-out_size']
+        server_info[server_id, 4] = data_frame.loc[server_id, 'storage_size']
     return server_info
 
 
-def get_container_info():
-    container_info = []
-    path = '../data/container_info.csv'
-    key = 'container_id'
+def get_container_info(container_number):
+    """
+    :return:返回一个二维数组，第一维是 容器id，第二维表示资源
+    """
+    container_info = np.zeros((container_number, 2))
+    path = 'data/container_info.csv'
     data_frame = pd.read_csv(path)
-    data_frame.set_index(key, inplace=True)
-    data_dict = data_frame.to_dict('index')
-    for ts, value in data_dict.items():
-        # 第一个key是ts
-        ts_request = []
-        container_info.append({
-            'pulling': value['container_pulling_delay'],
-            'storage': value['container_size']
-        })
+    for container_id, row in data_frame.iterrows():
+        container_info[container_id, 0] = data_frame.loc[container_id, 'container_size']
+        container_info[container_id, 1] = data_frame.loc[container_id, 'container_pulling_delay']
     return container_info
 
 
@@ -130,10 +130,6 @@ def onehot_from_logits(logits, eps=0.2):
         torch.eye(logits.shape[1])[[np.random.choice(range(logits.shape[1]), size=logits.shape[0])]],
         requires_grad=False).to(logits.device)
 
-    # for i, r in enumerate(torch.rand(logits.shape[0])):
-    #     print(i, r)
-    # print(argmax_acs.shape, rand_acs.shape)
-    # print(argmax_acs.shape[0], argmax_acs.shape[1])
     # 通过epsilon-贪婪算法来选择用哪个动作
     return torch.stack([
         argmax_acs[i] if r > eps else rand_acs[i]
@@ -163,3 +159,36 @@ def gumbel_softmax(logits, temperature=1.0):
     # 返回一个y_hard的独热量,但是它的梯度是y,我们既能够得到一个与环境交互的离散动作,又可以
     # 正确地反传梯度
     return y
+
+
+def to_maxtrix(placing_actions, matrix_shape):
+    num_list = [torch.argmax(action) for action in placing_actions]
+    binary_str = [bin(n)[2:].zfill(matrix_shape[1]) for n in num_list]
+    matrix = np.zeros((matrix_shape[0], matrix_shape[1]), dtype=int)
+    for row_index, row in enumerate(binary_str):
+        for col_index, col in enumerate(row):
+            matrix[row_index][col_index] = (binary_str[row_index][col_index] == '1')
+    return matrix
+
+
+def to_maxtrix_tensor(placing_actions, matrix_shape):
+    num_list = torch.stack([torch.argmax(action) for action in placing_actions])
+    binary_str = [torch.tensor(list(map(int, bin(n)[2:].zfill(matrix_shape[1])))) for n in num_list]
+    matrix = torch.zeros(matrix_shape[0], matrix_shape[1], dtype=torch.int32)
+    for row_index, row in enumerate(binary_str):
+        matrix[row_index] = row
+    return matrix
+
+
+def to_list(routing_actions):
+    num_list = [torch.argmax(action) for action in routing_actions]
+    return num_list
+
+
+if __name__ == '__main__':
+    server_info = get_server_info(server_number=3)
+    container_info = get_container_info(container_number=10)
+    request_info = get_user_request_info(timestamp=10, user_number=10)
+    print(server_info)
+    # print(container_info)
+    # print(request_info)

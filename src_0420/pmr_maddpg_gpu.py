@@ -1,37 +1,36 @@
 # --------------------------------------------------
-# 文件名: placing_routing_pmr_maddpg_v1
-# 创建时间: 2024/3/3 21:55
-# 描述:
+# 文件名: pmr_maddpg_gpu
+# 创建时间: 2024/4/23 17:24
+# 描述: pmr_maddpg_gpu版本
 # 作者: WangYuanbo
 # --------------------------------------------------
-# 相对于v0优化一下代码
-# 首先搞清楚ddpg的流程
-# 有两个网络，一个actor（动作）网络，一个critic（评价）网络
-# 动作网络的给出当前状态下应该执行的动作
-# 评价网络评估这个动作的价值，评价网络的输入是（当前状态，当前动作）
-# 评价网络的更新目标是最小化贝尔曼误差
-# 试图让我们的Critic预测的动作值函数尽可能的接近感知到的长期回报。
-# y_i = r_i + γ * Q(s_{i+1}, a_{i+1})
-# r_i代表了在当前状态 s_i 执行动作 a_i 后得到的奖励，
-# γ 是折扣因子，Q(s_{i+1}, a_{i+1}) 表示执行下一步动作 a_{i+1}
-# 在状态 s_{i+1} 下由目标网络（Target Network）给出的预测动作值。
-
-#  如何更新动作网络了?动作的网络的目的是生成Q值更大的动作,
-# 因此其更新目标就是最小化评价网络Q值的相反数,
-# loss= -torch.mean(self.critic(state,self.actor(state)))
+# TensorDict(
+#     fields={
+#         action: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.float32, is_shared=False),
+#         done: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False),
+#         observation: Tensor(shape=torch.Size([3]), device=cpu, dtype=torch.float32, is_shared=False),
+#         terminated: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False),
+#         truncated: Tensor(shape=torch.Size([1]), device=cpu, dtype=torch.bool, is_shared=False)},
+#     batch_size=torch.Size([]),
+#     device=cpu,
+#     is_shared=False)
+# 所有返回的都应该是Tensor
 import argparse
 import os
+import random
 import sys
 import time
+from collections import namedtuple
 from datetime import datetime
 
+import numpy as np
+import torch
+import torch.nn.functional as F
 import yaml
-from easydict import EasyDict as edict
-from torch.utils.tensorboard import SummaryWriter
 
-from customENV.placing_routing_env_gpu_v1 import CustomEnv
-from memory.buffer import MAPrioritizedReplayBuffer
-from tools import *
+from customENV.env_v1_gpu import CustomEnv
+from memory.buffer import MAPrioritizedTensorReplayBuffer
+from tools import gumbel_softmax, onehot_from_logits, to_maxtrix, to_list, to_maxtrix_tensor
 
 
 class TwoLayerFC(torch.nn.Module):
@@ -72,7 +71,9 @@ class DDPG:
             action = gumbel_softmax(action)
         else:
             action = onehot_from_logits(action)
-        return action.view(-1)
+
+        # return action.detach().cpu().numpy()[0]
+        return action.detach()
 
     def soft_update(self, net, target_net, tau):
         for param_target, param in zip(target_net.parameters(),
@@ -113,14 +114,11 @@ class MADDPG:
         return [agt.target_actor for agt in self.agents]
 
     def take_action(self, state, explore):
-        # routing智能体公用同一个状态
-        # placing智能体公用同一个状态
-        # routing系统状态是Dict类型，只需要把他处理即可
-        state = torch.tensor(state, dtype=torch.float).to(self.device).view(1, -1)
+        # 所有的智能体公用同一个系统状态
+        # 这里假设输入state已经是一个tensor了
         actions = [
             agent.take_action(state, explore) for agent in self.agents
         ]
-        # actions_tensor = torch.tensor(actions).to(self.device)
         return actions
 
     def update(self, sample, i_agent, weights=None):
@@ -158,7 +156,7 @@ class MADDPG:
         # 计算td_error
         td_error = torch.abs(critic_value - delayed_return).detach()
         critic_loss = torch.mean((critic_value - delayed_return.detach()) ** 2 * weights)
-        critic_loss.backward(retain_graph=True)
+        critic_loss.backward()
         cur_agent.critic_optimizer.step()
 
         # 更新动作网络
@@ -211,8 +209,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 # 确认使用的设备
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f'Using device: {device}')
-env = CustomEnv()
+
+env = CustomEnv(device=device)
 
 # 获得脚本名字
 filename = os.path.basename(sys.argv[0])  # 获取脚本文件名
@@ -222,7 +220,7 @@ father_log_directory = 'log'
 if not os.path.exists(father_log_directory):
     os.makedirs(father_log_directory)
 current_time = datetime.now()
-formatted_time = current_time.strftime('%Y%m%d-%H_%M_%S')
+formatted_time = current_time.strftime('%Y%m%d-%H%M%S')
 log_file_name = script_name + '_' + env.name + '-' + formatted_time
 
 log_path = os.path.join(father_log_directory, log_file_name)
@@ -232,18 +230,31 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 log_path = os.path.join(log_dir, 'output_info.log')
 f_log = open(log_path, 'w', encoding='utf-8')
-writer = SummaryWriter(log_dir)
+
+Config = namedtuple('Config',
+                    ['num_episodes',
+                     'target_update',
+                     'buffer_size',
+                     'minimal_size',
+                     'batch_size',
+                     'actor_lr',
+                     'critic_lr',
+                     'update_interval',
+                     'hidden_dim',
+                     'gamma',
+                     'tau'
+                     ])
 
 with open('train_config.yaml', 'r', encoding='utf-8') as f:
-    config = yaml.safe_load(f)
+    config_data = yaml.safe_load(f)
 
-config = edict(config)
+config = Config(**config_data)
 
 random.seed(0)
 np.random.seed(0)
 torch.manual_seed(0)
 
-replay_buffer = MAPrioritizedReplayBuffer(
+replay_buffer = MAPrioritizedTensorReplayBuffer(
     state_size=env.state_dim,
     placing_action_size=env.placing_action_dims[0],
     routing_action_size=env.routing_action_dims[0],
@@ -268,13 +279,20 @@ maddpg = MADDPG(env=env, action_dims=action_dims, state_dims=state_dims,
 def evaluate(para_env, maddpg, n_episode=10):
     # 对学习的策略进行评估,此时不会进行探索
     env = para_env
-    returns = np.zeros(env.agents_number)
+    returns = torch.zeros(env.agents_number).to(device=device)
     for _ in range(n_episode):
         state, done = env.reset()
         while not done:
             actions = maddpg.take_action(state, explore=False)
-            state, rewards, done, info = env.step(actions)  # rewards输出的是所有agent的和，info输出的是每个agent的reward
-            rewards = np.array(info)
+            placing_actions = actions[:env.placing_agents_number]
+            routing_actions = actions[-env.routing_agents_number:]
+            placing_matrix = to_maxtrix_tensor(placing_actions, (env.server_number, env.container_number)).to(device=device) # 要把这个tensor转换成一个矩阵
+            routing_list = torch.stack(to_list(routing_actions)).to(device=device)
+            env_action = {
+                'placing_action': placing_matrix,
+                'routing_action': routing_list,
+            }
+            state, rewards, done, info = env.step(env_action)  # rewards输出的是所有agent的和，info输出的是每个agent的reward
             returns += rewards * 1.0
     returns = returns / n_episode
     returns = returns.tolist()
@@ -297,13 +315,17 @@ for i_episode in range(config.num_episodes):
     state, done = env.reset()
     while not done:
         actions = maddpg.take_action(state, explore=True)
-        # for action in actions:
-        # print(type(actions), actions)
-        # 这里输出的actions是一个list的np array
-        # 主要是这一步，action与环境进行交互
-        next_state, rewards, done, _ = env.step(actions)
         placing_actions = actions[:env.placing_agents_number]
         routing_actions = actions[-env.routing_agents_number:]
+        placing_matrix = to_maxtrix_tensor(placing_actions,
+                                           (env.server_number, env.container_number)).to(device=device)  # 要把这个tensor转换成一个矩阵
+        routing_list = torch.stack(to_list(routing_actions)).to(device=device)
+        env_action = {
+            'placing_action': placing_matrix,
+            'routing_action': routing_list,
+        }
+
+        next_state, rewards, done, info = env.step(env_action)
         replay_buffer.add((state, placing_actions, routing_actions, rewards, next_state, done))
         state = next_state
         total_step += 1
@@ -311,16 +333,15 @@ for i_episode in range(config.num_episodes):
             batch, weights, tree_idxs = replay_buffer.sample(config.batch_size)
             all_agents_td_error = []
             for a_i in range(env.agents_number):
-                print(a_i)
                 loss, td_error = maddpg.update(batch, a_i)
                 all_agents_td_error.append(td_error)
             all_agents_td_error = torch.stack(all_agents_td_error, dim=1)
             all_agents_td_error = torch.sum(all_agents_td_error, dim=1).reshape(-1)
             replay_buffer.update_priorities(tree_idxs, all_agents_td_error.cpu().numpy())
             maddpg.update_all_targets()
+    # break
     if (i_episode + 1) % 10 == 0:
         # ep_returns是一个np
-
         ep_returns = evaluate(env, maddpg, n_episode=10)
         now_time = time.time()
         elapsed_time = round(now_time - last_time, 2)
@@ -334,14 +355,3 @@ for i_episode in range(config.num_episodes):
             maddpg.save()
 
 print(best_reward['episode'], best_reward['value'], best_reward['list'])
-
-# # 训练结束进行测试
-# # 初始化13个actor网络
-# maddpg.load_model()
-# state, done = env.reset()
-# while not done:
-#     actions = maddpg.take_action(state, explore=False)
-#     print(actions)
-#     next_state, rewards, done, _ = env.step(actions)
-#     print(rewards)
-#     state = next_state
