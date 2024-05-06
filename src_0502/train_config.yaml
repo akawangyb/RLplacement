@@ -1,0 +1,11 @@
+num_episodes: 10000
+target_update: 10
+buffer_size: 1000
+minimal_size: 500
+batch_size: 256
+actor_lr: 0.0003
+critic_lr: 0.003
+update_interval: 10
+hidden_dim: 64
+gamma: 0.98
+tau: 0.005  # 软更新参数
