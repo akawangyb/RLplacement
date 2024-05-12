@@ -16,6 +16,7 @@ import gym
 import torch
 import yaml
 from gym import spaces
+
 from tools import get_server_info, get_container_info, get_user_request_info
 
 # 定义一个具名元组类型
@@ -174,7 +175,7 @@ class CustomEnv(gym.Env):
              server_state.view(-1),
              last_placing_state.view(-1))
         ).to(self.device)
-        return self.state_tensor.view(1,-1), False
+        return self.state_tensor.view(1, -1), False
 
     def step(self, action):
         # 传入一组动作，根据系统当前的状态，输出下一个观察空间
@@ -184,7 +185,11 @@ class CustomEnv(gym.Env):
         # 假设传入的action是一个tensordict类型
         placing_action = action['placing_action']
         routing_action = action['routing_action']
+        assert placing_action.shape == (self.server_number, self.container_number), \
+            f'Expected shape {(self.server_number, self.container_number)}, but got {placing_action.shape}'
 
+        assert routing_action.shape[0] == self.user_number, \
+            f'Expected shape {self.user_number}, but got {routing_action.shape[0]}'
         # 传入的placing_action是一个二维0,1矩阵[server_number,container_number]， tensor
         # 传入的routing_action是一个一维[user_number],每个值表示这个用户请求由哪个服务器完成， tensor
 
@@ -206,7 +211,8 @@ class CustomEnv(gym.Env):
 
         self.state = state
         # rewards 写成一个张量形式
-        rewards = torch.concat([placing_rewards, routing_rewards]).to(self.device)
+        # rewards = torch.concat([placing_rewards, routing_rewards]).to(self.device)
+        rewards = torch.stack([torch.sum(placing_rewards), torch.sum(routing_rewards)]).to(self.device)
         rewards = -rewards
         done = torch.full((1,), False).to(self.device)
         self.timestamp += 1
@@ -287,7 +293,8 @@ class CustomEnv(gym.Env):
         # 3.边缘服务器上没有部署相应的镜像
         image_id = self.user_request_info[self.timestamp].long()[:, 0]  # 设置 image_id
         # 拓展placing_action
-        expanded_placing_action = torch.ones((placing_action.shape[0] + 1, placing_action.shape[1]), dtype=torch.int).to(self.device)
+        expanded_placing_action = torch.ones((placing_action.shape[0] + 1, placing_action.shape[1]),
+                                             dtype=torch.int).to(self.device)
         expanded_placing_action[0:placing_action.shape[0], 0:placing_action.shape[1]] = placing_action
         not_deployed_mask = expanded_placing_action[routing_action, image_id] == 0
         # placing_action,二维tensor,先将其拓展
@@ -331,5 +338,13 @@ class CustomEnv(gym.Env):
 
 if __name__ == '__main__':
     env = CustomEnv('cpu')
-    print(env.container_storage)
-    # state, done = env.reset()
+    state, done = env.reset()
+    placing_list = [[0, 0, 1], [1, 0, 0]]
+    routing_list = [2, 2, 2]
+    placing_action = torch.tensor(placing_list)
+    routing_action = torch.tensor(routing_list)
+    env_action = {
+        'placing_action': placing_action,
+        'routing_action': routing_action
+    }
+    next_state, rewards, done, info = env.step(env_action)

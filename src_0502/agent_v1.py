@@ -17,8 +17,8 @@ import torch
 import yaml
 
 from env import CustomEnv
-from maddpg_origin import MADDPG
-from memory.buffer import MultiAgentReplayBuffer
+from maddpg_v1 import MADDPG
+from memory.MultiAgentReplayBuffer import MultiAgentReplayBuffer
 
 # 指定训练gpu
 parser = argparse.ArgumentParser(description='选择训练GPU的参数')
@@ -77,18 +77,17 @@ random.seed(0)
 np.random.seed(0)
 torch.manual_seed(0)
 
-routing_action_dims = env.routing_action_dims
-placing_action_dims = env.placing_action_dims
-action_dims = placing_action_dims + routing_action_dims
-state_dims = env.state_dims
-critic_input_dim = env.state_dim + sum(action_dims)
+routing_action_dim = (env.user_number, env.container_number)
+placing_action_dim = (env.server_number, env.container_number, 2)
+state_dim = env.state_dim
+placing_action_memory = (state_dim, placing_action_dim, config.buffer_size, device)
+routing_action_memory = (state_dim, routing_action_dim, config.buffer_size, device)
 
-replay_buffer = MultiAgentReplayBuffer(
-    state_size=env.state_dim,
-    actions_size=action_dims,
-    device=device,
-    buffer_size=config.buffer_size,
-)
+replay_buffer = MultiAgentReplayBuffer([placing_action_memory, routing_action_memory])
+
+state_dims = [state_dim] * 2
+action_dims = [placing_action_dim, routing_action_dim]
+critic_input_dim = [state_dim, placing_action_dim, routing_action_dim]
 
 maddpg = MADDPG(env=env, action_dims=action_dims, state_dims=state_dims,
                 critic_input_dim=critic_input_dim,
@@ -99,24 +98,14 @@ maddpg = MADDPG(env=env, action_dims=action_dims, state_dims=state_dims,
 def evaluate(para_env, maddpg, n_episode=10):
     # 对学习的策略进行评估,此时不会进行探索
     env = para_env
-    returns = torch.zeros(env.agents_number)
+    returns = torch.zeros(2)
     for _ in range(n_episode):
         state, done = env.reset()
         while not done:
-            actions = maddpg.take_action(state, explore=False)
-            placing_actions = actions[:env.placing_agents_number]
-            routing_actions = actions[-env.routing_agents_number:]
-            placing_actions = torch.cat(placing_actions, dim=0)
-            # placing_actions = (placing_actions > 0.5).int()
-            routing_actions = [torch.argmax(routing_action) for routing_action in routing_actions]
-            routing_actions = torch.stack(routing_actions)
+            raw_actions, env_action = maddpg.take_action(state, explore=False)
 
-            env_action = {
-                'placing_action': placing_actions,
-                'routing_action': routing_actions,
-            }
             state, rewards, done, info = env.step(env_action)  # rewards输出的是所有agent的和，info输出的是每个agent的reward
-            returns += info * 1.0
+            returns += rewards
     returns = returns / n_episode
     returns = returns.tolist()
     # 输出每个agent的reward，以及全体agent的和
@@ -137,38 +126,20 @@ last_time = time.time()
 for i_episode in range(config.num_episodes):
     state, done = env.reset()  # 这里的state就是一个tensor
     while not done:
-        actions = maddpg.take_action(state, explore=True)
-        placing_actions = actions[:env.placing_agents_number]
-        # 把placing_action转换成二维张量
-        placing_actions = torch.cat(placing_actions, dim=0).float()
-        # placing_actions = (placing_actions > 0.5).int()
-        routing_actions = actions[-env.routing_agents_number:]
-        routing_actions = [torch.argmax(routing_action) for routing_action in routing_actions]
-        routing_actions = torch.stack(routing_actions)
-        # routing_actions = torch.cat(routing_actions, dim=0)
-        # print("placing_actions:", placing_actions)
-        # print("routing_actions:", routing_actions)
-        env_action = {
-            'placing_action': placing_actions,
-            'routing_action': routing_actions,
-        }
-
-        # 从actions里面获得env可以识别的action
-        # 这里输出的actions是一个list的np array
-        # 主要是这一步，action与环境进行交互
+        raw_actions, env_action = maddpg.take_action(state, explore=True)
         next_state, rewards, done, info = env.step(env_action)
-        # print("rewards:", rewards.long())
-        actions = env_action
-
-        replay_buffer.add((state, actions, rewards, next_state, done))
+        placing_memory = (state, raw_actions[0], rewards[0], next_state, done)
+        routing_memory = (state, raw_actions[1], rewards[1], next_state, done)
+        replay_buffer.add([placing_memory, routing_memory])
         state = next_state
         total_step += 1
         if replay_buffer.real_size >= config.minimal_size and total_step % config.update_interval == 0:
             batch = replay_buffer.sample(config.batch_size)
-            for i in range(maddpg.placing_agents_number + maddpg.routing_agents_number):
-                maddpg.update(i, batch)
+            # 要对记忆进行整形
+            # 更新两个智能体的参数
+            maddpg.update(0, batch)
+            maddpg.update(1, batch)
             maddpg.update_all_targets()
-    # break
     if (i_episode + 1) % 10 == 0:
         # ep_returns是一个np
         ep_returns = evaluate(env, maddpg, n_episode=10)

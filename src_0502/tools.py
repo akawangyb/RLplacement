@@ -124,17 +124,20 @@ class ReplayMemory(object):
 
 def onehot_from_logits(logits, eps=0.2):
     ''' 生成最优动作的独热（one-hot）形式 '''
-    argmax_acs = (logits == logits.max(1, keepdim=True)[0]).float()
-    # 生成随机动作,转换成独热形式
-    rand_acs = torch.autograd.Variable(
-        torch.eye(logits.shape[1])[[np.random.choice(range(logits.shape[1]), size=logits.shape[0])]],
-        requires_grad=False).to(logits.device)
 
-    # 通过epsilon-贪婪算法来选择用哪个动作
-    return torch.stack([
-        argmax_acs[i] if r > eps else rand_acs[i]
-        for i, r in enumerate(torch.rand(logits.shape[0]))
-    ])
+    # argmax_acs = (logits == logits.max(1, keepdim=True)[0]).float()
+    argmax_acs = (logits == logits.max(-1, keepdim=True)[0]).float()
+    return argmax_acs
+    # # 生成随机动作,转换成独热形式
+    # rand_acs = torch.autograd.Variable(
+    #     torch.eye(logits.shape[1])[[np.random.choice(range(logits.shape[1]), size=logits.shape[0])]],
+    #     requires_grad=False).to(logits.device)
+    #
+    # # 通过epsilon-贪婪算法来选择用哪个动作
+    # return torch.stack([
+    #     argmax_acs[i] if r > eps else rand_acs[i]
+    #     for i, r in enumerate(torch.rand(logits.shape[0]))
+    # ])
 
 
 def sample_gumbel(shape, eps=1e-20, tens_type=torch.FloatTensor):
@@ -183,6 +186,68 @@ def to_maxtrix_tensor(placing_actions, matrix_shape):
 def to_list(routing_actions):
     num_list = [torch.argmax(action) for action in routing_actions]
     return num_list
+
+
+def train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size):
+    def trans_action(env, action):
+        # 需要把action 转换一下 成env_action={
+        # placing_action:, (server_number * container_number) 2d 0,1矩阵
+        # routing_action:, (user_number) 1d ,，给个位置的值[0,server_number+1]中}
+        server_number = env.server_number
+        container_number = env.container_number
+        user_number = env.user_number
+        placing_action_dim = 2 ** (env.server_number * env.container_number)
+        routing_action_dim = (env.server_number + 1) ** env.user_number
+        action_dim = placing_action_dim * routing_action_dim
+        placing_action = action // routing_action_dim
+        routing_action = action % routing_action_dim
+        binary_str = np.binary_repr(placing_action, width=server_number * container_number)
+        placing_tensor = torch.tensor([int(i) for i in binary_str], dtype=torch.int32).view(server_number,
+                                                                                            container_number)
+        base_m_str = np.base_repr(routing_action, base=server_number + 1)
+        base_m_lst = [int(char) for char in base_m_str.zfill(user_number)]
+        base_m_tensor = torch.tensor(base_m_lst, dtype=torch.int32)
+        routing_tensor = base_m_tensor
+        env_action = {
+            'placing_action': placing_tensor,
+            'routing_action': routing_tensor
+        }
+        return env_action
+
+    return_list = []
+    for i_episode in range(num_episodes):
+        episode_return = 0
+        state, done = env.reset()
+        # done = False
+        while not done:
+            action = agent.take_action(state)
+            env_action = trans_action(env, action)
+            next_state, reward, done, _ = env.step(env_action)
+
+            reward = torch.sum(reward)
+            # done = terminated or truncated
+            replay_buffer.add(state, action, reward, next_state, done)
+            state = next_state
+            episode_return += reward
+            if replay_buffer.size() > minimal_size:
+                b_s, b_a, b_r, b_ns, b_d = replay_buffer.sample(batch_size)
+                transition_dict = {'states': b_s, 'actions': b_a, 'next_states': b_ns, 'rewards': b_r, 'dones': b_d}
+                agent.update(transition_dict)
+        if (i_episode + 1) % 10 == 0:  # 每10次输出episode的返回
+            print({'episode': '%d' % (i_episode + 1), 'return': '%.3f' % np.mean(return_list[-10:])})
+        return_list.append(episode_return)
+    return return_list
+
+
+def compute_advantage(gamma, lmbda, td_delta):
+    td_delta = td_delta.detach().numpy()
+    advantage_list = []
+    advantage = 0.0
+    for delta in td_delta[::-1]:
+        advantage = gamma * lmbda * advantage + delta
+        advantage_list.append(advantage)
+    advantage_list.reverse()
+    return torch.tensor(advantage_list, dtype=torch.float)
 
 
 if __name__ == '__main__':
