@@ -97,7 +97,6 @@ for i_episode in range(config.num_episodes):
         replay_buffer.add(transition)
         state = next_state
         total_step += 1
-        # print(rewards)
         if replay_buffer.real_size >= config.minimal_size and total_step % config.update_interval == 0:
             batch = replay_buffer.sample(config.batch_size)
             agent.update(batch)
