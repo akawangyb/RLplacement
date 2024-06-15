@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 from gurobipy import GRB, quicksum
 
-from env import CustomEnv
+from env_with_interference import CustomEnv
 
 
 def baseline_cloud(env: CustomEnv):

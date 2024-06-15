@@ -9,6 +9,7 @@ from collections import namedtuple
 import gym
 import torch
 import yaml
+from catboost import CatBoostRegressor
 from gym import spaces
 from torch import Tensor
 
@@ -123,6 +124,8 @@ class CustomEnv(gym.Env):
         self.timestamp = 0
         self.last_placing_state = None
         self.action_dim = (self.container_number, (self.server_number + 1))
+        self.model = CatBoostRegressor()
+        self.model.load_model('catboost_model.bin')
 
     def reset(self):
         """
@@ -261,8 +264,7 @@ class CustomEnv(gym.Env):
         # 获得路由到边的placing_action
         assert cloud_routing_mask.shape == valid_edge_mask.shape
         placing_rewards = torch.zeros(self.container_number).to(self.device)
-        placing_rewards[valid_edge_mask] = self.edge_delay + \
-                                           self.user_request_info[self.timestamp, valid_edge_mask, -1]
+        placing_rewards[valid_edge_mask] = self.edge_delay
         # 这里加上前后的镜像的拉取延迟
 
         last_placing = self.state['last_placing_state']
@@ -273,6 +275,27 @@ class CustomEnv(gym.Env):
 
         placing_rewards[cloud_routing_mask] = self.cloud_delay + \
                                               self.user_request_info[self.timestamp, cloud_routing_mask, -1]
+
+        # 计算每个容器的干扰
+        # 首先计算每个服务的部署资源总量
+        server_resource_demand = torch.stack(
+            [server_cpu_demand, server_mem_demand, server_net_in_demand, server_net_out_demand], dim=-1)
+        # print(server_resource_demand.shape)
+        server_resource_supply = self.server_info[:, :4]
+        container_interference = torch.zeros_like(placing_rewards)
+        for i in range(self.container_number):
+            if valid_edge_mask[i]:
+                server_id = user_action[i]
+                container_resource_demand = self.user_request_info[self.timestamp, i, :4]
+                input_vector = container_resource_demand.clone().view(-1).tolist() + [0, 0] + \
+                               (server_resource_supply[server_id] - server_resource_demand[server_id]).clone().view(
+                                   -1).tolist() + [200, 200]
+                assert len(input_vector) == 12, f'length of input_vector: {len(input_vector)}'
+                container_interference[i] = self.model.predict(input_vector)
+
+        placing_rewards[valid_edge_mask] += self.user_request_info[self.timestamp, valid_edge_mask, -1] * \
+                                            (1 + container_interference[valid_edge_mask])
+
         valid_placing_action = valid_edge_mask | cloud_routing_mask
 
         placing_rewards[~valid_placing_action] = self.penalty

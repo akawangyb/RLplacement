@@ -5,15 +5,13 @@
 # 作者: WangYuanbo
 # --------------------------------------------------
 import argparse
-import collections
 import os
 import random
 import sys
-from collections import deque, namedtuple
+from collections import namedtuple
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn.functional as F
 from torch import Tensor
@@ -22,14 +20,18 @@ from torch import Tensor
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
-def one_hot(action: Tensor):
+def one_hot(action: Tensor, eps=0.1):
     num_classes = action.shape[-1]
-    action = torch.argmax(action, dim=-1)
-    action = F.one_hot(action, num_classes=num_classes)
-    return action
+    argmax_action = torch.argmax(action, dim=-1)
+    # 假设在这里实现一个eps greedy
+    rand_action = torch.randint(0, num_classes, argmax_action.size(), device=action.device)
+    action_onehot = F.one_hot(argmax_action, num_classes=num_classes)
+    rand_action_one_hot = F.one_hot(rand_action, num_classes=num_classes)
 
-
-
+    return torch.stack([
+        action_onehot[i] if r > eps else rand_action_one_hot[i]
+        for i, r in enumerate(torch.rand(action.shape[0]))
+    ])
 
 
 def onehot_from_logits(logits, eps=0.2):

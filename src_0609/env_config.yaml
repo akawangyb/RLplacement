@@ -1,6 +1,6 @@
 server_number: 3
-user_number: 10
-container_number: 10
+user_number: 40
+container_number: 40
 penalty: 500
 end_timestamp: 24
 cloud_delay: 100

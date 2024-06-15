@@ -13,7 +13,7 @@ import yaml
 
 from ddpg import DDPG
 from ddpg_memory import ReplayBuffer
-from env import CustomEnv
+from env_with_interference import CustomEnv
 from tools import base_opt
 
 env = CustomEnv('cpu')

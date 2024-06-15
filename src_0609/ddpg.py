@@ -100,8 +100,7 @@ class DDPG:
         if explore:
             # 给动作增加噪声
             action = F.gumbel_softmax(action, dim=-1)
-        else:
-            action = one_hot(action)
+        action = one_hot(action)
 
         return action
 
