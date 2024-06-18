@@ -109,50 +109,48 @@ def exp_decay(step, init_value=1, decay_rate=0.01):
     return value
 
 
-for _ in range(200):
-    print(exp_decay(_))
 
-# total_step = 0
-# for i_episode in range(config.num_episodes):
-#     # for i_episode in range(1):
-#     state, done = env.reset()  # 这里的state就是一个tensor
-#     episode_reward = torch.zeros(1)
-#     while not done:
-#         state = state.view(1, -1)
-#         p = random.random()
-#         p_std = linear_decay(i_episode, total_epoch=200, init_value=0.8)
-#         action = None
-#         if p <= p_std:
-#             # 采用gurobi模型产生的动作
-#             raw_action = env.model_solve_relax()
-#             Flag = False
-#             for _ in range(20):
-#                 # print(env.timestamp)
-#                 raw_action = env.random_rand(raw_action)
-#                 action = torch.tensor(raw_action).int()
-#                 _, valid = env.cal_placing_rewards(action)
-#                 if valid.all():
-#                     Flag = True
-#                     break
-#             if Flag == False:
-#                 action = torch.tensor(env.model_solve()).int()
-#         else:
-#             # 采用ddpg模型产生的动作
-#             action = agent.take_action(state, explore=True)
-#         next_state, rewards, done, info = env.step(action)
-#         rewards = torch.sum(rewards)
-#         rewards = -rewards
-#         transition = (state, action, rewards, next_state, done)
-#         replay_buffer.add(transition)
-#         state = next_state
-#         total_step += 1
-#         if total_step % config.update_interval == 0 and replay_buffer.real_size >= config.batch_size:
-#             batch = replay_buffer.sample(config.batch_size)
-#             agent.update(batch)
-#         episode_reward += rewards
-#     record_info = 'Episode {} return: {}'.format(i_episode, episode_reward.item())
-#     print(record_info)
-#     f_log.write(record_info + '\n')
-#     # if i_episode % config.update_interval == 0:
-#     #     last_time = time.time()
-#     #     evaluate(para_env=env, agent=agent, i_episode=i_episode, last_time=last_time)
+total_step = 0
+for i_episode in range(config.num_episodes):
+    # for i_episode in range(1):
+    state, done = env.reset()  # 这里的state就是一个tensor
+    episode_reward = torch.zeros(1)
+    while not done:
+        state = state.view(1, -1)
+        p = random.random()
+        p_std = linear_decay(i_episode, total_epoch=200, init_value=0.8)
+        action = None
+        if p <= p_std:
+            # 采用gurobi模型产生的动作
+            raw_action = env.model_solve_relax()
+            Flag = False
+            for _ in range(20):
+                # print(env.timestamp)
+                raw_action = env.random_rand(raw_action)
+                action = torch.tensor(raw_action).int()
+                _, valid = env.cal_placing_rewards(action)
+                if valid.all():
+                    Flag = True
+                    break
+            if Flag == False:
+                action = torch.tensor(env.model_solve()).int()
+        else:
+            # 采用ddpg模型产生的动作
+            action = agent.take_action(state, explore=True)
+        next_state, rewards, done, info = env.step(action)
+        rewards = torch.sum(rewards)
+        rewards = -rewards
+        transition = (state, action, rewards, next_state, done)
+        replay_buffer.add(transition)
+        state = next_state
+        total_step += 1
+        if total_step % config.update_interval == 0 and replay_buffer.real_size >= config.batch_size:
+            batch = replay_buffer.sample(config.batch_size)
+            agent.update(batch)
+        episode_reward += rewards
+    record_info = 'Episode {} return: {}'.format(i_episode, episode_reward.item())
+    print(record_info)
+    f_log.write(record_info + '\n')
+    # if i_episode % config.update_interval == 0:
+    #     last_time = time.time()
+    #     evaluate(para_env=env, agent=agent, i_episode=i_episode, last_time=last_time)

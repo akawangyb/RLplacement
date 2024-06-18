@@ -411,14 +411,95 @@ class CustomEnv(gym.Env):
 
     def model_solve(self):
         """
-        获得一个松弛后的解
-        :return:
+        :return: 不松驰直接求解
         """
         ts = self.timestamp
         # 创建模型
         m = gp.Model("example")
         m.setParam('OutputFlag', 0)
         # 定义变量的尺寸，例如我们这里使用3x3的二维数组
+        x_rows = range(self.container_number)
+        x_columns = range(self.server_number + 1)
+
+        # 添加二维0-1变量。lb=0, ub=1和vtype=GRB.BINARY指定变量为0-1变量
+        x = m.addVars(x_rows, x_columns, lb=0, ub=1, vtype=GRB.BINARY, name="x")
+
+        # 添加约束
+        # 约束一
+        # 检查是不是所有的用户请求都有一个服务器完成
+        for c in x_rows:
+            m.addConstr(sum(x[c, n] for n in x_columns) == 1)
+        # 约束三
+        # 对于服务部署，检查容器的的磁盘空间是不是满足的
+        for n in range(self.server_number):
+            # 计算服务器n上的存储空间
+            n_storage = 0
+            for s in range(self.container_number):
+                n_storage += x[s, n] * self.container_info[s][0]
+            m.addConstr(n_storage <= self.server_info[n][4])
+
+        # 约束四
+        # 对于请求路由，首先检查服务器的cpu,mem,net资源是不是足够的
+        resource_demand = [[m.addVar() for _ in range(4)] for _ in range(self.container_number)]
+        for n in range(self.server_number):
+            for u in range(self.container_number):
+                resource_demand[n][0] += x[u, n] * self.user_request_info[ts][u][0]
+                resource_demand[n][1] += x[u, n] * self.user_request_info[ts][u][1]
+                resource_demand[n][2] += x[u, n] * self.user_request_info[ts][u][2]
+                resource_demand[n][3] += x[u, n] * self.user_request_info[ts][u][3]
+
+        for n in range(self.server_number):
+            for resource in range(4):
+                m.addConstr(resource_demand[n][resource] <= self.server_info[n][resource])
+
+        # 更新模型以添加约束
+        m.update()
+
+        # 打印模型以验证
+        # m.printStats()
+
+        # 假设最大化边缘服务的部署数量
+        objective1 = quicksum(
+            x[u, n] * self.edge_delay for u in range(self.container_number) for n in range(self.server_number))
+        objective2 = quicksum(x[u, self.server_number] * self.cloud_delay for u in range(self.container_number))
+        delta = [[m.addVar() for _ in range(self.server_number + 1)] for _ in range(self.container_number)]
+
+        for u in range(self.container_number):
+            for n in range(self.server_number):
+                vector = [self.user_request_info[self.timestamp][u][0].item(),
+                          self.user_request_info[self.timestamp][u][1].item(),
+                          self.user_request_info[self.timestamp][u][2].item(),
+                          self.user_request_info[self.timestamp][u][3].item(),
+                          0,
+                          0,
+                          resource_demand[n][0],
+                          resource_demand[n][1],
+                          resource_demand[n][2],
+                          resource_demand[n][3],
+                          200,
+                          200
+                          ]
+                res = 0
+                for i in range(12):
+                    res = weights[i] * vector[i]
+                res += bias
+                delta[u][n] += res
+        objective3 = quicksum(
+            x[u, n] * delta[u][n] for u in range(self.container_number) for n in range(self.server_number))
+        objective = objective1 + objective2 + objective3
+        m.setObjective(objective, GRB.MINIMIZE)
+
+        # Optimize model
+        m.optimize()
+        x_result = np.array([[x[i, j].x for j in x_columns] for i in x_rows])
+
+        return x_result
+
+    def model_solve_max_edge(self):
+        ts = self.timestamp
+        # 创建模型
+        m = gp.Model("example")
+        m.setParam('OutputFlag', 0)
         x_rows = range(self.container_number)
         x_columns = range(self.server_number + 1)
 
@@ -468,6 +549,7 @@ class CustomEnv(gym.Env):
         x_result = np.array([[x[i, j].x for j in x_columns] for i in x_rows])
 
         return x_result
+
 
 
 if __name__ == '__main__':

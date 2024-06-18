@@ -92,6 +92,21 @@ def baseline_gurobi(env: CustomEnv):
     return total_reward
 
 
+def baseline_gurobi_max_edge(env: CustomEnv):
+    """
+    用gurobi去解这个问题，优化目标是最大化边缘请求数量
+    :param env:
+    """
+    state, done = env.reset()
+    total_reward = torch.zeros(env.container_number)
+    while not done:
+        action = env.model_solve_max_edge()
+        action = torch.tensor(action)
+        state, reward, done, info = env.step(action)
+        total_reward += reward
+    return total_reward
+
+
 def baseline_gurobi_relax(env: CustomEnv):
     """
     用gurobi去解这个问题，优化目标是最大化边缘请求数量
@@ -118,16 +133,16 @@ def baseline_gurobi_relax(env: CustomEnv):
 
 if __name__ == '__main__':
     env = CustomEnv('cpu')
-    res1 = baseline_greedy_placement(env=env)
+    res1 = baseline_gurobi(env=env)
     res1 = torch.sum(res1)
-    res2 = baseline_gurobi(env=env)
-    res2 = torch.sum(res2)
-    res3 = baseline_cloud(env=env)
-    res4 = baseline_gurobi_relax(env=env)
-    print(res4)
+    res2 = baseline_cloud(env=env)
+    res3 = baseline_gurobi_relax(env=env)
+    res3 = torch.sum(res3)
+
+    res4 = baseline_gurobi_max_edge(env=env)
     res4 = torch.sum(res4)
 
-    print('greedy', res1)
-    print('gurobi', res2)
-    print('cloud', res3)
-    print('gurobi relax', res4)
+    print('gurobi integer', res1)
+    print('gurobi relax', res3)
+    print('gurobi integer max edge', res4)
+    print('cloud', res2)

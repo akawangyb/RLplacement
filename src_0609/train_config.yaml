@@ -1,4 +1,4 @@
-num_episodes: 10000
+num_episodes: 5000
 target_update: 10
 buffer_size: 1000
 minimal_size: 300
