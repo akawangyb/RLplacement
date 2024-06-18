@@ -8,6 +8,15 @@
 import torch
 import torch.nn.functional as F
 
+import time
+from collections import namedtuple
+
+import torch
+import yaml
+
+from env import CustomEnv
+from tools import base_opt
+
 
 def compare_weights(model_before, model_after, model_name):
     print("=========Comparing weights for {}=======".format(model_name))
@@ -133,7 +142,7 @@ class PPO:
             new_probs = torch.gather(self.actor(states), dim=-1, index=index_actions).squeeze(-1)
             log_new_probs = torch.log(new_probs)
             ratio = torch.exp(log_new_probs - log_old_probs)
-            ratio = torch.sum(ratio, dim=-1).view(-1, 1)
+            ratio = torch.prod(ratio, dim=-1).view(-1, 1)
 
             # log_probs = torch.log(
             #     torch.gather(self.actor(states), dim=-1, index=index_actions).squeeze(-1).prod(dim=-1).view(-1, 1))
@@ -172,15 +181,6 @@ class PPO:
         advantage_list.reverse()
         return torch.tensor(advantage_list, dtype=torch.float, device=self.device)
 
-
-import time
-from collections import namedtuple
-
-import torch
-import yaml
-
-from env import CustomEnv
-from tools import base_opt
 
 env = CustomEnv('cpu')
 f_log, log_dir, device = base_opt(env.name)

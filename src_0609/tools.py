@@ -20,7 +20,7 @@ from torch import Tensor
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 
-def one_hot(action: Tensor, eps=0.1):
+def one_hot(action: Tensor, eps=0.05):
     num_classes = action.shape[-1]
     argmax_action = torch.argmax(action, dim=-1)
     # 假设在这里实现一个eps greedy

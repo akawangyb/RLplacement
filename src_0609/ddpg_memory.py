@@ -36,7 +36,7 @@ class ReplayBuffer:
         self.real_size = min(self.size, self.real_size + 1)
 
     def sample(self, batch_size):
-        assert self.real_size >= batch_size
+        assert self.real_size >= batch_size, f'Real size is {self.real_size}, but batch size is{batch_size}'
         sample_idxs = np.random.choice(self.real_size, batch_size, replace=False)
         batch = (
             self.state[sample_idxs],
