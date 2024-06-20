@@ -92,15 +92,16 @@ class DDPG:
         self.tau = tau
         self.device = device
         self.log_dir = log_dir
+        self.action_dim = action_dim
 
-    def take_action(self, state, explore: bool):
+    def take_action(self, state, explore: bool, eps=0.1):
         self.actor.eval()
         action = self.actor(state)
         action = action.detach().squeeze(0)
         if explore:
             # 给动作增加噪声
             action = F.gumbel_softmax(action, dim=-1)
-            action = one_hot(action, 0.1)
+            action = one_hot(action, eps=eps)
         else:
             action = one_hot(action, 0)
 
@@ -150,3 +151,47 @@ class DDPG:
 
     def save(self, name):
         torch.save(self.actor, name)
+
+    def learn(self, transition_dict):
+        states = transition_dict['states']
+        states = torch.concat(states, dim=0)
+
+        actions = transition_dict['actions']  # 是一个list，每个元素是一个字典
+        actions = torch.stack(actions, dim=0)
+
+        next_states = transition_dict['next_states']
+        next_states = torch.concat(next_states, dim=0)
+
+
+
+        rewards = transition_dict['rewards']
+        # 把每一个奖励变成其实际奖励
+        rewards = torch.stack(rewards, dim=0).float().view(-1, 1)
+        dones = transition_dict['dones']
+        dones = torch.stack(dones, dim=0).int().view(-1, 1)
+
+        batch_size = states.shape[0]
+        assert rewards.shape == (batch_size, 1), f'rewards shape {rewards.shape} does not match batch size {batch_size}'
+        assert rewards.shape == dones.shape
+        assert next_states.shape == states.shape
+        assert actions.shape[0] == batch_size
+        # 假设只先学习actor
+        for _ in range(20):
+            self.actor.train()
+            dim = actions.shape[-1]
+            y = F.softmax(self.actor(states), dim=-1).view(-1, dim)
+            target_action = actions.view(-1, dim)
+            target_action = torch.argmax(target_action, dim=-1)
+            actor_loss = torch.nn.CrossEntropyLoss()(y, target_action)
+            actor_before = self.actor.state_dict()
+            self.actor_optimizer.zero_grad()
+            actor_loss.backward()
+            self.actor_optimizer.step()
+        # 假设学习critic网络
+        # for _ in range(10):
+        #     self.critic_optimizer.zero_grad()
+        #     critic_loss = F.mse_loss(self.critic(states, actions), rewards)
+        #     critic_loss.backward()
+        #     self.critic_optimizer.step()
+        actor_after = self.actor.state_dict()
+        # compare_weights(actor_before, actor_after, 'actor')
