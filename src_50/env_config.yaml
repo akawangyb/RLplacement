@@ -1,0 +1,13 @@
+server_number: 3
+user_number: 50
+container_number: 50
+penalty: 500
+end_timestamp: 24
+cloud_delay: 100
+edge_delay: 5
+####
+max_cpu: 8
+max_mem: 64000
+max_net_in: 1000
+max_net_out: 1000
+max_disk: 1000
