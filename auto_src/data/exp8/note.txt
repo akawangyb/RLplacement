@@ -1,0 +1,12 @@
+0
+gurobi integer tensor(2266718.)
+0
+gurobi relax tensor(2347668.5000)
+gurobi max edge tensor(2266718.)
+gurobi max edge tensor(2289449.)
+[10, 16000, 500, 500]
+greedy tensor(2844482.7500)
+cloud 2984573.0476379395
+total computing delay (tensor(2024573.1250), 48000)
+
+Process finished with exit code 0

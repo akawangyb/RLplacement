@@ -1,0 +1,7 @@
+gurobi integer tensor(3008288.7500)
+gurobi relax tensor(2911418.2500)
+gurobi max edge tensor(3008288.7500)
+gurobi relax edge tensor(3181226.7500)
+cloud 3548209.8387756348
+tensor(3502689.)
+total computing delay (tensor(2588209.7500), 48000)
