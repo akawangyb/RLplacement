@@ -1,5 +1,5 @@
 num_episodes: 2000
-epochs: 97
+epochs: 5
 buffer_size: 5000
 minimal_size: 300
 batch_size: 256
@@ -10,7 +10,7 @@ hidden_dim: 64
 gamma: 0.85
 tau: 0.005  # 软更新参数
 eps: 0.2
-data_dir: exp3
+data_dir: exp0
 
 # PPO 参数
 lmbda: 0.95

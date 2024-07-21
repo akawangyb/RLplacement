@@ -9,6 +9,8 @@ import re
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
+from tools import find_log_folders
+
 
 def sliding_average(data, window_size):
     smoothed_data = []
@@ -47,17 +49,13 @@ color_set = ['#8ECFC9', '#FFBE7A', '#FA7F6F', '#82B0D2', '#BEB8DC', '#E7DAD2', '
 color = ['#FA7F6F', '#BEB8DC', '#82B0D2', '#FFBE7A', '#8ECFC9', '#999999']
 
 # # baseline
-file_path1 = r'log_res/td3_agent_env-20240720-005856'
-file_path2 = r'log_res/ddpg_agent_ddpg-20240720-012731'
-# file_path3 = r'log_res/imitation_learning_td3_env-20240720-094829'
-file_path3 = r'log_res/imitation_learning_td3_env-20240720-094656'
-file_path4 = r'log_res/imitation_learning_env-20240720-100544'
+father_dir = r'log_res/exp0'
+file_paths = find_log_folders(father_dir)
+print(file_paths)
 label = ['TD3', 'DDPG', 'BC-TD3', 'BC-DDPG', ]
 
 # 文件路径列表
-file_paths = [file_path1, file_path2, file_path3, file_path4, ]
-# file_paths = [ file_path2, file_path3]
-# file_paths = [file_path1, file_path2, file_path3]
+
 file_paths = [ele + '/output_info.log' for ele in file_paths]
 
 # 设置9:16比例的图形大小

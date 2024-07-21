@@ -19,8 +19,6 @@ from td3 import TD3
 # from env import CustomEnv
 from tools import base_opt
 
-env = CustomEnv('cpu')
-f_log, log_dir, device = base_opt(env.name)
 with open('train_config.yaml', 'r', encoding='utf-8') as f:
     config_data = yaml.safe_load(f)
 
@@ -38,9 +36,14 @@ Config = namedtuple('Config',
                      'tau',
                      'lmbda',
                      'epochs',
-                     'eps'
+                     'eps',
+                     'data_dir'
                      ])
 config = Config(**config_data)
+
+f_log, log_dir, device = base_opt('env', config.data_dir)
+
+env = CustomEnv(device=device, data_dir=config.data_dir)
 
 state_dim = env.state_dim
 action_dim = env.action_dim

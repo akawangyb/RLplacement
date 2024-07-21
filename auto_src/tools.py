@@ -219,6 +219,27 @@ def print_model_parameters(model, model_name):
             print(name, param.grad)
 
 
+def find_log_folders(folder_path):
+    # folder_path = os.path.join(folder_path, 'log_res')
+    ddpg = ''
+    td3 = ''
+    bc_td3 = ''
+    bc_ddpg = ''
+    for root, dirs, files in os.walk(folder_path):
+        # 遍历当前文件夹下的所有子文件夹
+        for folder in dirs:
+            if folder.startswith('ddpg'):
+                ddpg = os.path.join(root, folder)
+            elif folder.startswith('imitation_learning_env'):
+                bc_ddpg = os.path.join(root, folder)
+            elif folder.startswith('td3'):
+                td3 = os.path.join(root, folder)
+            elif folder.startswith('imitation_learning_td3'):
+                bc_td3 = os.path.join(root, folder)
+
+    return td3, ddpg, bc_td3, bc_ddpg
+
+
 if __name__ == '__main__':
     server_info = get_server_info(server_number=3)
     container_info = get_container_info(container_number=10)
