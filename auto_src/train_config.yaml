@@ -1,0 +1,18 @@
+num_episodes: 2000
+epochs: 97
+buffer_size: 5000
+minimal_size: 300
+batch_size: 256
+actor_lr: 0.00005
+critic_lr: 0.003
+update_interval: 5
+hidden_dim: 64
+gamma: 0.85
+tau: 0.005  # 软更新参数
+eps: 0.2
+data_dir: exp3
+
+# PPO 参数
+lmbda: 0.95
+
+target_update: 3
