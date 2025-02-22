@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 # --------------------------------------------------
 # 文件名: experiment_epochs
 # 创建时间: 2024/7/11 16:47
 # 描述:
 # 作者: WangYuanbo
 # --------------------------------------------------
+import argparse
 import os.path
 import pickle
 import time
@@ -17,6 +19,18 @@ from ddpg import DDPG
 from ddpg_memory import ReplayBuffer
 from env_with_interference import CustomEnv
 from tools import base_opt
+
+# 创建命令行参数解析器
+parser = argparse.ArgumentParser()
+
+# 添加--p参数
+parser.add_argument("--p", default=-1, help="输入参数p的值")
+
+# 解析命令行参数
+args = parser.parse_args()
+
+# 获取--p参数的值
+p_value = int(args.p)
 
 with open('train_config.yaml', 'r', encoding='utf-8') as f:
     config_data = yaml.safe_load(f)
@@ -85,7 +99,7 @@ last_time = time.time()
 best_reward = np.inf
 # 训练前评估一次
 evaluate(para_env=env, agent=agent, i_episode=0, last_time=last_time, n_episode=1)
-num_epochs = 200
+num_epochs = config.epochs
 
 file_path = os.path.join('data', config.data_dir + '_expert_solution.pkl')
 if not os.path.exists(file_path):
@@ -110,10 +124,13 @@ while not done:
     transition_dict['dones'].append(done)
 
 best_actor_path = os.path.join(log_dir, 'best_actor.pth')
+
 for epoch in range(num_epochs):
-    agent.learn(transition_dict, epoch=1)
+    agent.learn(transition_dict, epoch=1, )
     last_time = time.time()
     res = evaluate(para_env=env, agent=agent, i_episode=epoch + 1, last_time=last_time, n_episode=1)
     if res < best_reward:
         best_reward = res
         agent.save(best_actor_path)
+
+agent.learn(transition_dict, epoch=-1, critic_learn=p_value)

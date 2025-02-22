@@ -101,7 +101,7 @@ class TD3:
         self.critic_1_optimizer = torch.optim.Adam(self.critic_1.parameters(), lr=critic_lr)
         self.critic_2_optimizer = torch.optim.Adam(self.critic_2.parameters(), lr=critic_lr)
         self.bc_optimizer_actor = torch.optim.Adam(self.actor.parameters(), lr=0.0005)
-
+        self.bc_optimizer_critic = torch.optim.Adam(self.critic_1.parameters(), lr=0.003)
 
         self.gamma = gamma
         self.tau = tau
@@ -189,7 +189,7 @@ class TD3:
     def save(self, name):
         torch.save(self.actor, name)
 
-    def learn(self, transition_dict, epoch=10, learning_rate=0.0001):
+    def learn(self, transition_dict, epoch=10, critic_learn=-1):
         states = transition_dict['states']
         states = torch.concat(states, dim=0)
 
@@ -200,22 +200,12 @@ class TD3:
         next_states = torch.concat(next_states, dim=0)
 
         rewards = transition_dict['rewards']
-        real_rewards = []
-        # 把每一个奖励变成其实际奖励
-        last_reward = 0
-        for reward in reversed(rewards):
-            real_rewards.append(reward + self.gamma * last_reward)
-            last_reward = reward
-        rewards = [ele for ele in reversed(real_rewards)]
-        # rewards = torch.Tensor(rewards).view(-1, 1)
-        rewards = torch.stack(rewards, dim=0).float().view(-1, 1)
 
         dones = transition_dict['dones']
         dones = torch.stack(dones, dim=0).int().view(-1, 1)
 
         batch_size = states.shape[0]
-        assert rewards.shape == (batch_size, 1), f'rewards shape {rewards.shape} does not match batch size {batch_size}'
-        assert rewards.shape == dones.shape
+
         assert next_states.shape == states.shape
         assert actions.shape[0] == batch_size
         # 假设只先学习actor
@@ -226,25 +216,31 @@ class TD3:
             target_action = actions.view(-1, dim)
             target_action = torch.argmax(target_action, dim=-1)
             actor_loss = torch.nn.CrossEntropyLoss()(y, target_action)
-            # print("Epoch:", epoch, " loss: ", actor_loss.item())
             self.bc_optimizer_actor.zero_grad()
             actor_loss.backward()
             self.bc_optimizer_actor.step()
-        # 训练价值网络
-
-        # for _ in range(epoch):
-        #     self.critic_1.train()
-        #     self.bc_optimizer_actor.zero_grad()
-        #     critic_loss = F.mse_loss(self.critic_1(states, actions.float()), rewards.float())
-        #     critic_loss.backward()
-        #     self.bc_optimizer_actor.step()
-
         self.target_actor.load_state_dict(self.actor.state_dict())
+        if critic_learn == -1:
+            return
+        discounted_rewards = []
+        # 把每一个奖励变成其实际奖励
+        last_reward = torch.zeros_like(rewards[0])
+        for reward in reversed(rewards):
+            discounted_rewards.append(reward + self.gamma * last_reward)
+            last_reward = discounted_rewards[-1]
 
-        # # 软更新
-        # self.soft_update(self.actor, self.target_actor, self.tau)
-        # self.soft_update(self.critic_1, self.target_critic_1, self.tau)
-        # self.soft_update(self.critic_2, self.target_critic_2, self.tau)
+        rewards = discounted_rewards[::-1]
+        rewards = torch.stack(rewards, dim=0).view(-1, 1)
+        assert rewards.shape == (batch_size, 1), f"rewards shape {rewards.shape} does not match"
+
+        # 假设学习critic网络
+        for _ in range(critic_learn):
+            critic_loss = F.mse_loss(self.critic_1(states, actions), rewards)
+            print("epoch ", _, "critic loss", critic_loss.item())
+            self.bc_optimizer_critic.zero_grad()
+            critic_loss.backward()
+            self.bc_optimizer_critic.step()
+        self.target_critic_1.load_state_dict(self.critic_1.state_dict())
 
     def save(self, name='actor_parameters.pth'):
         torch.save(self.actor.state_dict(), name)

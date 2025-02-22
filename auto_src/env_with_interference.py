@@ -325,6 +325,7 @@ class CustomEnv(gym.Env):
         m = gp.Model("example")
         # 设置解的池参数
         m.setParam('OutputFlag', 0)
+        m.setParam('TimeLimit', 5)
 
         # 定义变量的尺寸，例如我们这里使用3x3的二维数组
         x_rows = range(self.container_number)
@@ -372,26 +373,24 @@ class CustomEnv(gym.Env):
 
         for u in range(self.container_number):
             for n in range(self.server_number):
-                for u in range(self.container_number):
-                    for n in range(self.server_number):
-                        vector = [self.user_request_info[self.timestamp][u][0].item(),
-                                  self.user_request_info[self.timestamp][u][1].item(),
-                                  self.user_request_info[self.timestamp][u][2].item(),
-                                  self.user_request_info[self.timestamp][u][3].item(),
-                                  0,
-                                  0,
-                                  resource_demand[n][0],
-                                  resource_demand[n][1],
-                                  resource_demand[n][2],
-                                  resource_demand[n][3],
-                                  200,
-                                  200
-                                  ]
-                        res = 0
-                        for i in range(12):
-                            res = weights[i] * vector[i]
-                        res += bias
-                        delta[u][n] += res
+                vector = [self.user_request_info[self.timestamp][u][0].item(),
+                          self.user_request_info[self.timestamp][u][1].item(),
+                          self.user_request_info[self.timestamp][u][2].item(),
+                          self.user_request_info[self.timestamp][u][3].item(),
+                          0,
+                          0,
+                          resource_demand[n][0],
+                          resource_demand[n][1],
+                          resource_demand[n][2],
+                          resource_demand[n][3],
+                          200,
+                          200
+                          ]
+                res = 0
+                for i in range(12):
+                    res = weights[i] * vector[i]
+                res += bias
+                delta[u][n] += res
 
         objective3 = quicksum(
             x[u, n] * delta[u][n] for u in range(self.container_number) for n in range(self.server_number))

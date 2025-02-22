@@ -164,16 +164,16 @@ def compute_advantage(gamma, lmbda, td_delta):
 
 def base_opt(env_name, data_dir):
     # 指定训练gpu
-    parser = argparse.ArgumentParser(description='选择训练GPU的参数')
-    parser.add_argument('--gpu', type=int, default=0, help='要使用的GPU的编号')
-
-    # 解析参数
-    args = parser.parse_args()
-
-    # 设置CUDA设备
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
-
-    # 确认使用的设备
+    # parser = argparse.ArgumentParser(description='选择训练GPU的参数')
+    # parser.add_argument('--gpu', type=int, default=0, help='要使用的GPU的编号')
+    #
+    # # 解析参数
+    # args = parser.parse_args()
+    #
+    # # 设置CUDA设备
+    # os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    #
+    # # 确认使用的设备
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
@@ -237,7 +237,79 @@ def find_log_folders(folder_path):
             elif folder.startswith('imitation_learning_td3'):
                 bc_td3 = os.path.join(root, folder)
 
-    return td3, ddpg, bc_td3, bc_ddpg
+    return td3, ddpg, bc_ddpg
+
+
+def find_exp_folders(folder_path):
+    for root, dirs, files in os.walk(folder_path):
+        # 遍历当前文件夹下的所有子文件夹
+        for folder in dirs:
+            if folder.startswith('exper'):
+                folder = os.path.join(root, folder)
+                file_path = os.path.join(folder, 'output_info.log')
+                return file_path
+    return 'error'
+
+
+def find_name_log_folders(folder_path, agent_name):
+    ele = []
+    for root, dirs, files in os.walk(folder_path):
+        # 遍历当前文件夹下的所有子文件夹
+        for folder in dirs:
+            if folder.startswith(agent_name):
+                ele.append(os.path.join(root, folder))
+
+    return ele
+
+
+def find_solution_file(folder_path):
+    ele = []
+    bc = ''
+    ddpg = ''
+    td3 = ''
+    bc_ddpg = ''
+
+    for root, dirs, files in os.walk(folder_path):
+        # 遍历当前文件夹下的所有子文件夹
+        for folder in dirs:
+            if folder.startswith('ddpg'):
+                ddpg = os.path.join(root, folder)
+            elif folder.startswith('imitation_learning_env'):
+                bc_ddpg = os.path.join(root, folder)
+            elif folder.startswith('td3'):
+                td3 = os.path.join(root, folder)
+            elif folder.startswith('imitation_learning_td3'):
+                bc_td3 = os.path.join(root, folder)
+            elif folder.startswith('experiment'):
+                bc = os.path.join(root, folder)
+    bc = os.path.join(bc, 'best_actor.pth')
+    ddpg = os.path.join(ddpg, 'ddpg_actor.pth')
+    bc_ddpg = os.path.join(bc_ddpg, 'bc_ddpg_actor.pth')
+    td3 = os.path.join(td3, 'td3_actor.pth')
+    return ddpg, bc_ddpg, td3, bc
+
+
+import heapq
+
+
+class MaxHeap:
+    def __init__(self):
+        self.heap = []
+
+    def push(self, item):
+        heapq.heappush(self.heap, -item)  # 将元素取负数并添加到堆中
+
+    def pop(self):
+        return -heapq.heappop(self.heap)  # 弹出元素后再取负数恢复原值
+
+    def get_max(self):
+        return -self.heap[0]  # 获取堆中的最大元素（恢复原值）
+
+    def size(self):
+        return len(self.heap)
+
+    def is_empty(self):
+        return len(self.heap) == 0
 
 
 if __name__ == '__main__':

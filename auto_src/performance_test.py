@@ -5,7 +5,6 @@
 # 作者: WangYuanbo
 # --------------------------------------------------
 import copy
-import pickle
 import time
 from collections import namedtuple
 
@@ -39,7 +38,7 @@ Config = namedtuple('Config',
                      'data_dir'
                      ])
 config = Config(**config_data)
-dataset = 'exp2_3'
+dataset = '3exp_1'
 env = CustomEnv('cpu', dataset)
 state_dim = env.state_dim
 action_dim = env.action_dim
@@ -69,8 +68,8 @@ def eval_model_solution(agent, is_valid=True):
 
         # 计算干扰因子
         reward, valid, factor = env.cal_placing_rewards(action, interference_factor=True)
-        if is_valid:
-            assert valid.all(), 'not valid action'
+        if not valid.all():
+            print(env.timestamp, " not valid action")
 
         episode_reward.append(reward.tolist())
         episode_interference.append(factor.tolist())
@@ -181,6 +180,23 @@ def cloud(env: CustomEnv):
     return total_reward, episode_reward, episode_interference, episode_time
 
 
+def ideal(env: CustomEnv):
+    user_request_info = env.user_request_info  # 是一个张量
+    total_reward = 0
+    episode_reward = []
+    episode_interference = [[0] * env.container_number] * env.end_timestamp
+    episode_time = [0] * env.end_timestamp
+
+    for ts in range(env.end_timestamp):
+        ts_lat = []
+        for user_id in range(env.user_number):
+            ts_lat.append(user_request_info[ts][user_id][-1].item() + env.edge_delay)
+        episode_reward.append(ts_lat)
+        total_reward += sum(ts_lat)
+
+    return total_reward, episode_reward, episode_interference, episode_time
+
+
 def greedy(env: CustomEnv, trade_factor=0.0):
     """
     按照best fit 原则，优先放置延迟大的。
@@ -225,7 +241,8 @@ def greedy(env: CustomEnv, trade_factor=0.0):
 
         # 计算干扰因子
         reward, valid, factor = env.cal_placing_rewards(action, interference_factor=True)
-        assert valid.all(), 'not valid action'
+        if not valid.all():
+            raise 'not valid action'
 
         episode_reward.append(reward.tolist())
         episode_interference.append(factor.tolist())
@@ -357,8 +374,12 @@ data['LR-Instant'] = lr_ins
 data['Greedy'] = greedy_res
 for key, value in data.items():
     print(key, value[0])
-
-# 将数据写入JSON文件
-dir = r'performance_res/' + dataset + '_compare_res.pkl'
-with open(dir, "wb") as file:
-    pickle.dump(data, file)
+#
+# # 将数据写入JSON文件
+# dir = r'performance_res/' + dataset + '_compare_res.pkl'
+# with open(dir, "wb") as file:
+#     pickle.dump(data, file)
+#
+# ideal_res = ideal(env)
+# print('ideal complete')
+# print('ideal total delay', ideal_res[0])

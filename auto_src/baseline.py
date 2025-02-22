@@ -1,10 +1,5 @@
-# --------------------------------------------------
-# 文件名: baseline
-# 创建时间: 2024/6/6 15:04
-# 描述:
-# 作者: WangYuanbo
-# --------------------------------------------------
 import copy
+import time
 
 import torch
 import torch.nn.functional as F
@@ -25,45 +20,6 @@ def baseline_cloud(env: CustomEnv):
         # print(ts_lat)
 
     return sum(lat)
-
-
-def baseline_greedy_placement(env: CustomEnv):
-    '''
-    按照贪婪的模式去选择部署，
-    :param env:
-    :return:
-    '''
-    placed_position = [-1] * env.container_number  # 每个容器部署在什么地方
-    server_storage_supply = env.server_info[:, 4]
-    server_id = 0
-    for container_id in range(env.container_number):
-        storage_demand = env.container_info[container_id, 0]
-        if server_storage_supply[server_id] >= storage_demand:
-            server_storage_supply[server_id] -= storage_demand
-            placed_position[container_id] = server_id
-        else:
-            server_id += 1
-        if server_id >= env.server_number:
-            break
-    # 处理没放下的容器
-    for container_id, server_id in enumerate(placed_position):
-        if server_id == -1:
-            placed_position[container_id] = env.server_number
-
-    state, done = env.reset()
-    action = torch.tensor(placed_position, dtype=torch.long)
-    # action = torch.nn.functional.one_hot(action, env.server_number + 1)
-    total_reward = torch.zeros(env.container_number)
-    while not done:
-        temp_action = action.clone().detach()
-        onehot_action = F.one_hot(temp_action, env.server_number + 1)
-        reward, is_valid_placing = env.cal_placing_rewards(placing_action=onehot_action)
-        if not torch.all(is_valid_placing):
-            temp_action[~is_valid_placing] = env.server_number
-        onehot_action = F.one_hot(temp_action, env.server_number + 1)
-        state, reward, done, info = env.step(onehot_action)
-        total_reward += reward
-    return total_reward
 
 
 def random_rand(action):
@@ -87,7 +43,6 @@ def baseline_gurobi(env: CustomEnv, relax=False):
         cnt += torch.sum(action[:, -1] == 1).item()
         state, reward, done, info = env.step(action)
         total_reward += reward
-    print(cnt)
     return total_reward
 
 
@@ -98,6 +53,7 @@ def baseline_gurobi_max_edge(env: CustomEnv, relax=False):
     """
     state, done = env.reset()
     total_reward = torch.zeros(env.container_number)
+    cnt = 0
     while not done:
         raw_action = torch.tensor(env.model_solve_max_edge(relax=relax))
         while True:
@@ -105,11 +61,13 @@ def baseline_gurobi_max_edge(env: CustomEnv, relax=False):
             _, valid = env.cal_placing_rewards(action)
             if valid.all():
                 break
+        cnt += torch.sum(action[:, -1] == 1).item()
+        _, valid = env.cal_placing_rewards(action)
+        assert torch.all(valid), f'exist fuck action {valid}'
         state, reward, done, info = env.step(action)
         total_reward += reward
+    print(cnt)
     return total_reward
-
-
 
 
 def baseline_sum_delay(env: CustomEnv):
@@ -133,9 +91,7 @@ def greedy(env: CustomEnv):
     state, done = env.reset()
     total_reward = torch.zeros(env.container_number)
     container_info = env.container_info
-    server_cap = copy.deepcopy(env.server_info)
     max_cap = [env.max_cpu, env.max_mem, env.max_net_in, env.max_net_out]
-    # print(max_cap)
     while not done:
         ts = env.timestamp
         routing_id = [env.server_number] * env.container_number
@@ -145,8 +101,8 @@ def greedy(env: CustomEnv):
             for server_id in range(env.server_number):
                 tag = True
                 for j in range(4):
-                    if server_cap[server_id][j] < request[j] or server_cap[server_id][j] <= 0.3 * (max_cap[j]):
-                    # if server_cap[server_id][j] < request[j]:
+                    if server_cap[server_id][j] < request[j] or server_cap[server_id][j] <= 0.0 * (max_cap[j]):
+                        # if server_cap[server_id][j] < request[j]:
                         tag = False
                         break
                 # 检测存储
@@ -158,39 +114,93 @@ def greedy(env: CustomEnv):
                         routing_id[i] = server_id
                     server_cap[server_id][4] -= container_info[i][0]
                     break
-        # print(server_cap)
-        # print(routing_id)
         action = torch.tensor(routing_id).long()
         action = F.one_hot(action, num_classes=env.server_number + 1)
         state, reward, done, info = env.step(action)
         total_reward += reward
     return total_reward
 
+def greedy_place(env: CustomEnv, trade_factor=0.2):
+    """
+    按照 最大剩余优先 原则，优先放置延迟大的。
+    :param env:
+    """
+    total_reward = torch.zeros(env.container_number)
+
+    state, done = env.reset()
+    container_info = env.container_info
+
+    max_cap = [env.max_cpu, env.max_mem, env.max_net_in, env.max_net_out]
+    while not done:
+        server_cap = copy.deepcopy(env.server_info).tolist()
+        for id, ele in enumerate(server_cap):
+            ele.append(id)
+
+        ts = env.timestamp
+        routing_id = [env.server_number] * env.container_number
+
+        for i in range(env.user_number):
+            request = env.user_request_info[ts][i]
+            server_cap = sorted(server_cap, key=lambda x: sum([x[i] / max_cap[i] for i in range(4)]), reverse=True)
+            for id in range(env.server_number):
+                server_id = server_cap[id][-1]
+                # print(server_id)
+                tag = True
+                for j in range(4):
+                    if server_cap[id][j] < request[j] or server_cap[id][j] <= trade_factor * max_cap[j]:
+                        tag = False
+                        break
+                # 检测存储
+                if server_cap[id][4] < container_info[i][0]:
+                    tag = False
+                if tag:  # 证明当前服务器放得下
+                    for j in range(4):
+                        server_cap[id][j] -= request[j]
+                        routing_id[i] = server_id
+                    server_cap[id][4] -= container_info[i][0]
+                    break
+        # print(routing_id)
+
+        action = torch.tensor(routing_id).long()
+        action = F.one_hot(action, num_classes=env.server_number + 1)
+
+        # 计算干扰因子
+        reward, valid, factor = env.cal_placing_rewards(action, interference_factor=True)
+        assert valid.all(), 'not valid action'
+        total_reward += reward
+
+        state, reward, done, info = env.step(action)
+    return total_reward
+
 
 if __name__ == '__main__':
-    env = CustomEnv('cpu')
+    env = CustomEnv('cpu', data_dir='4exp_1')
 
-    # res1 = baseline_gurobi(env=env)
-    # res1 = torch.sum(res1)
-    # print('gurobi integer', res1)
+    res1 = baseline_gurobi(env=env)
+    res1 = torch.sum(res1)
+    print('gurobi integer', res1)
     #
     # res2 = baseline_gurobi(env=env, relax=True)
     # res2 = torch.sum(res2)
     # print('gurobi relax', res2)
-    #
+
     # res4 = baseline_gurobi_max_edge(env=env)
     # res4 = torch.sum(res4)
     # print('gurobi max edge', res4)
     #
     # res5 = baseline_gurobi_max_edge(env=env, relax=True)
     # res5 = torch.sum(res5)
-    # print('gurobi max edge', res5)
-    #
-    res6 = baseline_cloud(env=env)
-    print('cloud', res6)
+    # print('gurobi relax edge', res5)
 
-    res7 = greedy(env)
-    res7 = torch.sum(res7)
-    print(res7)
+    # res6 = baseline_cloud(env=env)
+    # print('cloud', res6)
+    #
+    # res7 = greedy_place(env,0)
+    # res7 = torch.sum(res7)
+    # print('greedy', res7)
+
+    # res8 = greedy(env)
+    # res8 = torch.sum(res8)
+    # print('greedy', res8)
 
     print('total computing delay', baseline_sum_delay(env=env))

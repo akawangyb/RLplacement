@@ -9,7 +9,7 @@ import re
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 
-from tools import find_log_folders
+from tools import find_log_folders, find_name_log_folders
 
 
 def sliding_average(data, window_size):
@@ -46,13 +46,25 @@ son_font_prop = FontProperties(family='SimSun', size=23)
 
 # 青色，橙色，砖红色，蓝色，紫色，灰色，黑色
 color_set = ['#8ECFC9', '#FFBE7A', '#FA7F6F', '#82B0D2', '#BEB8DC', '#E7DAD2', '#999999']
-color = ['#FA7F6F', '#BEB8DC', '#82B0D2', '#FFBE7A', '#8ECFC9', '#999999']
+color = ['#8ECFC9', '#FFBE7A', '#FA7F6F',
+         '#82B0D2', '#BEB8DC', '#E7DAD2',
+         '#F3D266', '#E7EFFA', '#999999',
+         '#F5EBAE', '#EF8B67', '#992224',
+         '#8074C8', '#D6EFF4', '#D8B365',
+         '#5BB5AC', '#DE526C', '#6F6F6F',
+         '#DD7C4F', '#6C61AF', '#B54764',
+         '#f2fafc']
+# color = ['#FA7F6F', '#BEB8DC', '#82B0D2', '#FFBE7A', '#8ECFC9', '#999999']
 
-# # baseline
-father_dir = r'log_res/exp0'
+# baseline
+# father_dir = r'log_res/temp/4exp_3'
+# file_paths = find_name_log_folders(father_dir, agent_name='imitation_learning')
+# label = [ele[-6:] for ele in file_paths]
+father_dir = r'log_res/4exp_3'
 file_paths = find_log_folders(father_dir)
+label = ['TD3', 'DDPG', 'BC-DDPG', ]
+
 print(file_paths)
-label = ['TD3', 'DDPG', 'BC-TD3', 'BC-DDPG', ]
 
 # 文件路径列表
 
@@ -62,36 +74,32 @@ file_paths = [ele + '/output_info.log' for ele in file_paths]
 fig, ax = plt.subplots(figsize=(16, 9))
 plt.xticks(fontproperties=roman_font_prop)
 plt.yticks(fontproperties=roman_font_prop)
-# 创建放大的局部子图
-# axins = inset_axes(ax, width="40%", height="30%", loc='lower left',
-#                    bbox_to_anchor=(0.22, 0.35, 1.8, 1),
-#                    bbox_transform=ax.transAxes,
-#                    )
 
-epoch = 2000
+epoch = 1000
 # 对文件路径列表中的每个文件进行处理
 for i, file_path in enumerate(file_paths):
+    # if i>=2:
+    #     break
     episodes, total_rewards = read_data(file_path)
-    total_rewards = sliding_average(total_rewards, 30)
+    total_rewards = sliding_average(total_rewards, 5)
     # 绘制total reward的折线图
     ax.plot(episodes[:epoch], total_rewards[:epoch], label=label[i], linewidth=3.0, color=color[i])
-    # axins.plot(episodes, total_rewards, linewidth=3.0, color=color[i])
+    # ax.plot(episodes[:epoch], total_rewards[:epoch],  linewidth=3.0, color=color[i])
 
 # 添加图表标题和坐标轴标签
 # 设置坐标轴刻度标签字体
 # 指定罗马字体
 # 设置x轴从0开始
-ax.set_xlim(left=0)
+ax.set_xlim(0, epoch)
 plt.xticks(fontproperties=roman_font_prop)
 plt.yticks(fontproperties=roman_font_prop)
 # 添加数量级表示
 ax.annotate(r'$\times 10^5$', xy=(0, 1.01), xycoords='axes fraction', fontproperties=roman_font_prop)
-# axins.annotate(r'$\times 10^5$', xy=(0, 1.01), xycoords='axes fraction', fontproperties=roman_font_prop, size=22)
 
 ax.set_xlabel('训练轮次（回合）', fontproperties=kai_font_prop)
 ax.set_ylabel('累计奖励（毫秒）', fontproperties=kai_font_prop)
 
-ax.legend(prop=roman_font_prop, loc='lower right', ncol=2)
+ax.legend(prop=roman_font_prop, loc='lower right', ncol=1)
 
 # 调整布局以减少上方的空白
 plt.subplots_adjust(top=0.95, bottom=0.10, left=0.08, right=0.95)
@@ -99,19 +107,30 @@ plt.subplots_adjust(top=0.95, bottom=0.10, left=0.08, right=0.95)
 # 灰色的虚线网格，线条粗细为 0.5
 ax.grid(True, linestyle='--', linewidth=1.5, color='gray', alpha=0.8)
 
+# # 创建放大的局部子图
+# axins = inset_axes(ax, width="40%", height="50%", loc='lower left',
+#                    bbox_to_anchor=(0.15, 0.25, 2.0, 1),
+#                    bbox_transform=ax.transAxes,
+#                    )
+# for i, file_path in enumerate(file_paths):
+#     episodes, total_rewards = read_data(file_path)
+#     total_rewards = sliding_average(total_rewards, 10)
+#     # 绘制total reward的折线图
+#     axins.plot(episodes, total_rewards, linewidth=3.0, color=color[i])
+
 # #  框的范围
-# xlim0 = 25
-# xlim1 = 200
-# ylim0 = -5.0
-# ylim1 = -3.8
+# xlim0 = 0
+# xlim1 = epoch
+# ylim0 = -102
+# ylim1 = -96
 #
 # # ylim0 = -0.5
 # # ylim1 = -1.5
 # # 调整子坐标系的显示范围
 # sub_ax_xlim0 = xlim0
 # sub_ax_xlim1 = xlim1
-# sub_ax_ylim0 = -5.0
-# sub_ax_ylim1 = -3.9
+# sub_ax_ylim0 = ylim0
+# sub_ax_ylim1 = ylim1
 # axins.set_xlim(sub_ax_xlim0, sub_ax_xlim1)
 # axins.set_ylim(sub_ax_ylim0, sub_ax_ylim1)
 #
@@ -142,8 +161,11 @@ ax.grid(True, linestyle='--', linewidth=1.5, color='gray', alpha=0.8)
 # # 设置连接线为虚线
 # con.set_linestyle('--')
 # axins.add_artist(con)
-#
+# axins.set_xlim(xlim0, xlim1)
+# axins.annotate(r'$\times 10^5$', xy=(0, 1.01), xycoords='axes fraction', fontproperties=roman_font_prop, size=21)
 # axins.grid(True, linestyle='--', linewidth=1.0, color='gray')
-
-# 显示图形
+# plt.xticks(fontproperties=roman_font_prop,size=21)
+# plt.yticks(fontproperties=roman_font_prop,size=21)
+# #
+# # 显示图形
 plt.show()

@@ -22,15 +22,15 @@ def ax2in(ax, file_paths):
                        )
     for i, file_path in enumerate(file_paths):
         episodes, total_rewards = read_data(file_path)
-        total_rewards = sliding_average(total_rewards, 10)
+        total_rewards = sliding_average(total_rewards, 5)
         # 绘制total reward的折线图
         axins.plot(episodes, total_rewards, linewidth=3.0, color=color[i])
 
     #  框的范围
     xlim0 = 0
     xlim1 = 1000
-    ylim0 = -4.2
-    ylim1 = -3.5
+    ylim0 = -6.3
+    ylim1 = -5.6
 
     # ylim0 = -0.5
     # ylim1 = -1.5
@@ -106,9 +106,12 @@ fig = plt.figure(figsize=(16, 15))
 # 使用GridSpec对象设置子图的布局
 gs = GridSpec(3, 1, hspace=0.35)
 
-file_paths1 = find_log_folders(r'../log_res/exp0')
-file_paths2 = find_log_folders(r'../log_res/exp2')
-file_paths3 = find_log_folders(r'../log_res/b_exp')
+file_paths1 = find_log_folders(r'../log_res/1exp_1')
+file_paths2 = find_log_folders(r'../log_res/1exp_2')
+file_paths3 = find_log_folders(r'../log_res/1exp_3')
+# file_paths1 = find_log_folders(r'../log_res/exp1_1')
+# file_paths2 = find_log_folders(r'../log_res/exp1_2')
+# file_paths3 = find_log_folders(r'../log_res/exp1_3')
 file_paths1 = [ele + '/output_info.log' for ele in file_paths1]
 file_paths2 = [ele + '/output_info.log' for ele in file_paths2]
 file_paths3 = [ele + '/output_info.log' for ele in file_paths3]
@@ -148,11 +151,11 @@ draw_a_subfig(ax1, file_paths1, '$(\mathrm{a})$ 实验组$1$', r'$\times 10^6$')
 ax2 = fig.add_subplot(gs[1, 0])
 draw_a_subfig(ax2, file_paths2, '$(\mathrm{b})$ 实验组$2$', r'$\times 10^6$')
 
-ax2in(ax2, file_paths2)
+# ax2in(ax2, file_paths2)
 
 # 创建第三个子图
 ax3 = fig.add_subplot(gs[2, 0])
-draw_a_subfig(ax3, file_paths3, '$(\mathrm{c})$ 实验组$3$', r'$\times 10^7$',fator=True)
+draw_a_subfig(ax3, file_paths3, '$(\mathrm{c})$ 实验组$3$', r'$\times 10^7$',True)
 
 plt.xticks(fontproperties=roman_font_prop)
 plt.yticks(fontproperties=roman_font_prop)

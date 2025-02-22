@@ -4,7 +4,8 @@
 # 描述:
 # 作者: WangYuanbo
 # --------------------------------------------------
-import copy
+import argparse
+import os
 import pickle
 import time
 from collections import namedtuple
@@ -18,6 +19,20 @@ from ddpg_memory import ReplayBuffer
 from env_with_interference import CustomEnv
 # from env import CustomEnv
 from tools import base_opt
+
+# # 创建命令行参数解析器
+# parser = argparse.ArgumentParser()
+#
+# # 添加--p参数
+# parser.add_argument("--p", default=-1, help="输入参数p的值")
+#
+# # 解析命令行参数
+# args = parser.parse_args()
+#
+# # 获取--p参数的值
+# p_value = int(args.p)
+
+# 在这里可以使用p_value作为输入参数的值进行后续操作
 
 with open('train_config.yaml', 'r', encoding='utf-8') as f:
     config_data = yaml.safe_load(f)
@@ -41,6 +56,7 @@ Config = namedtuple('Config',
                      ])
 config = Config(**config_data)
 
+p_value = config.lmbda
 f_log, log_dir, device = base_opt('env', config.data_dir)
 
 env = CustomEnv(device=device, data_dir=config.data_dir)
@@ -84,11 +100,14 @@ def evaluate(para_env, agent, i_episode, last_time, n_episode=10):
 
 last_time = time.time()
 evaluate(para_env=env, agent=agent, i_episode=-1, last_time=last_time, n_episode=1)
-actor_before = copy.deepcopy(agent.actor.state_dict())
-state, done = env.reset()  # 这里的state就是一个tensor
 transition_dict = {'states': [], 'actions': [], 'next_states': [], 'rewards': [], 'dones': []}
-with open('model_para/expert_solution.pkl', 'rb') as f:
+expert_file_path = os.path.join('data', config.data_dir + '_expert_solution.pkl1')
+if not os.path.exists(expert_file_path):
+    raise 'expert file does not'
+with open(expert_file_path, 'rb') as f:
     loaded_array = pickle.load(f)
+
+state, done = env.reset()  # 这里的state就是一个tensor
 while not done:
     state = state.view(1, -1)
     action = torch.tensor(loaded_array[env.timestamp])
@@ -101,11 +120,11 @@ while not done:
     transition_dict['rewards'].append(rewards)
     transition_dict['next_states'].append(next_state)
     transition_dict['dones'].append(done)
-agent.learn(transition_dict, config.epochs)
+agent.learn(transition_dict, config.epochs, p_value)
 # agent.actor.load_state_dict(torch.load(r'model_para/best_actor.pth'))
+# f_log.write("critic learn epoch: {}\n".format(p_value))
 last_time = time.time()
 evaluate(para_env=env, agent=agent, i_episode=1, last_time=last_time, n_episode=1)
-actor_after = copy.deepcopy(agent.actor.state_dict())
 
 total_step = 0
 best_reward = np.inf

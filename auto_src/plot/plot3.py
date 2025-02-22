@@ -113,8 +113,8 @@ path2_1 = [r'../log/x3exp_1/critic_learn/critic_loss.log',
 path3_1 = [r'../log/x3exp_1/multi_exp/save_solution_v2_env-20240814-145245/output_info.log',
            r'../log/x3exp_1/multi_exp']
 
-title = title3_1
-path = path3_1
+title = title1_1
+path = path1_1
 # 创建一个Figure对象，并设置图像大小
 fig = plt.figure(figsize=(16, 7))
 

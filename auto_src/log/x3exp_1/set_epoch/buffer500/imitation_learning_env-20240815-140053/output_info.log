@@ -1,0 +1,1504 @@
+Episode: -1, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode: 1, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 0 return: -10728793.0
+Episode: 0, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 1 return: -10723159.0
+Episode: 1, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 2 return: -10714536.0
+Episode: 2, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 3 return: -10386515.0
+Episode: 3, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 4 return: -10509850.0
+Episode: 4, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 5 return: -10654603.0
+Episode: 5, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 6 return: -10497944.0
+Episode: 6, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 7 return: -10395436.0
+Episode: 7, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 8 return: -10280377.0
+Episode: 8, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 9 return: -10719207.0
+Episode: 9, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 10 return: -10279732.0
+Episode: 10, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 11 return: -10375811.0
+Episode: 11, total reward: 10253825.0
+each agent reward: 10253825.0
+Episode 12 return: -11306570.0
+Episode: 12, total reward: 10878436.0
+each agent reward: 10878436.0
+Episode 13 return: -11057885.0
+Episode: 13, total reward: 10877383.0
+each agent reward: 10877383.0
+Episode 14 return: -11204622.0
+Episode: 14, total reward: 10725875.0
+each agent reward: 10725875.0
+Episode 15 return: -10970294.0
+Episode: 15, total reward: 10752171.0
+each agent reward: 10752171.0
+Episode 16 return: -10726358.0
+Episode: 16, total reward: 10736263.0
+each agent reward: 10736263.0
+Episode 17 return: -10822317.0
+Episode: 17, total reward: 10771998.0
+each agent reward: 10771998.0
+Episode 18 return: -9589037.0
+Episode: 18, total reward: 10813985.0
+each agent reward: 10813985.0
+Episode 19 return: -9987181.0
+Episode: 19, total reward: 10481994.0
+each agent reward: 10481994.0
+Episode 20 return: -10292022.0
+Episode: 20, total reward: 10087477.0
+each agent reward: 10087477.0
+Episode 21 return: -9624064.0
+Episode: 21, total reward: 9851570.0
+each agent reward: 9851570.0
+Episode 22 return: -9580369.0
+Episode: 22, total reward: 9721102.0
+each agent reward: 9721102.0
+Episode 23 return: -10622417.0
+Episode: 23, total reward: 9532408.0
+each agent reward: 9532408.0
+Episode 24 return: -10183703.0
+Episode: 24, total reward: 9003427.0
+each agent reward: 9003427.0
+Episode 25 return: -9650236.0
+Episode: 25, total reward: 9171815.0
+each agent reward: 9171815.0
+Episode 26 return: -10181749.0
+Episode: 26, total reward: 9158359.0
+each agent reward: 9158359.0
+Episode 27 return: -9851941.0
+Episode: 27, total reward: 8645149.0
+each agent reward: 8645149.0
+Episode 28 return: -9772047.0
+Episode: 28, total reward: 8115919.0
+each agent reward: 8115919.0
+Episode 29 return: -9884205.0
+Episode: 29, total reward: 7795711.5
+each agent reward: 7795711.5
+Episode 30 return: -10136800.0
+Episode: 30, total reward: 7345827.5
+each agent reward: 7345827.5
+Episode 31 return: -8673614.0
+Episode: 31, total reward: 7137564.5
+each agent reward: 7137564.5
+Episode 32 return: -9574545.0
+Episode: 32, total reward: 6757481.0
+each agent reward: 6757481.0
+Episode 33 return: -9369924.0
+Episode: 33, total reward: 7042747.0
+each agent reward: 7042747.0
+Episode 34 return: -10226613.0
+Episode: 34, total reward: 7352027.0
+each agent reward: 7352027.0
+Episode 35 return: -9161126.0
+Episode: 35, total reward: 7443595.0
+each agent reward: 7443595.0
+Episode 36 return: -10263643.0
+Episode: 36, total reward: 7095615.0
+each agent reward: 7095615.0
+Episode 37 return: -9851621.0
+Episode: 37, total reward: 7189762.0
+each agent reward: 7189762.0
+Episode 38 return: -9185523.0
+Episode: 38, total reward: 6742863.0
+each agent reward: 6742863.0
+Episode 39 return: -9522728.0
+Episode: 39, total reward: 6014376.0
+each agent reward: 6014376.0
+Episode 40 return: -9853425.0
+Episode: 40, total reward: 5494107.5
+each agent reward: 5494107.5
+Episode 41 return: -9667550.0
+Episode: 41, total reward: 5604619.0
+each agent reward: 5604619.0
+Episode 42 return: -9209240.0
+Episode: 42, total reward: 6024564.0
+each agent reward: 6024564.0
+Episode 43 return: -9493382.0
+Episode: 43, total reward: 5789935.5
+each agent reward: 5789935.5
+Episode 44 return: -9401730.0
+Episode: 44, total reward: 4855973.0
+each agent reward: 4855973.0
+Episode 45 return: -9563627.0
+Episode: 45, total reward: 4424985.5
+each agent reward: 4424985.5
+Episode 46 return: -9271099.0
+Episode: 46, total reward: 3882539.25
+each agent reward: 3882539.25
+Episode 47 return: -9363311.0
+Episode: 47, total reward: 4258592.5
+each agent reward: 4258592.5
+Episode 48 return: -9594294.0
+Episode: 48, total reward: 4534356.0
+each agent reward: 4534356.0
+Episode 49 return: -9339477.0
+Episode: 49, total reward: 4535118.5
+each agent reward: 4535118.5
+Episode 50 return: -9319028.0
+Episode: 50, total reward: 4453876.0
+each agent reward: 4453876.0
+Episode 51 return: -9521578.0
+Episode: 51, total reward: 4556182.0
+each agent reward: 4556182.0
+Episode 52 return: -9025625.0
+Episode: 52, total reward: 4177877.75
+each agent reward: 4177877.75
+Episode 53 return: -9238420.0
+Episode: 53, total reward: 4717403.5
+each agent reward: 4717403.5
+Episode 54 return: -10318313.0
+Episode: 54, total reward: 4354119.0
+each agent reward: 4354119.0
+Episode 55 return: -9703015.0
+Episode: 55, total reward: 3492172.5
+each agent reward: 3492172.5
+Episode 56 return: -9694803.0
+Episode: 56, total reward: 3435597.25
+each agent reward: 3435597.25
+Episode 57 return: -8635899.0
+Episode: 57, total reward: 3827249.75
+each agent reward: 3827249.75
+Episode 58 return: -9658556.0
+Episode: 58, total reward: 3827600.5
+each agent reward: 3827600.5
+Episode 59 return: -8675255.0
+Episode: 59, total reward: 3901302.25
+each agent reward: 3901302.25
+Episode 60 return: -9336323.0
+Episode: 60, total reward: 3871224.75
+each agent reward: 3871224.75
+Episode 61 return: -8807081.0
+Episode: 61, total reward: 3976504.75
+each agent reward: 3976504.75
+Episode 62 return: -9208927.0
+Episode: 62, total reward: 4233742.0
+each agent reward: 4233742.0
+Episode 63 return: -8551237.0
+Episode: 63, total reward: 4283506.5
+each agent reward: 4283506.5
+Episode 64 return: -9309111.0
+Episode: 64, total reward: 4511936.5
+each agent reward: 4511936.5
+Episode 65 return: -9331667.0
+Episode: 65, total reward: 4281973.5
+each agent reward: 4281973.5
+Episode 66 return: -8899892.0
+Episode: 66, total reward: 3969781.0
+each agent reward: 3969781.0
+Episode 67 return: -8780023.0
+Episode: 67, total reward: 3292131.25
+each agent reward: 3292131.25
+Episode 68 return: -8590511.0
+Episode: 68, total reward: 3284077.75
+each agent reward: 3284077.75
+Episode 69 return: -9108878.0
+Episode: 69, total reward: 3284389.25
+each agent reward: 3284389.25
+Episode 70 return: -8454571.0
+Episode: 70, total reward: 3217789.5
+each agent reward: 3217789.5
+Episode 71 return: -8990256.0
+Episode: 71, total reward: 3018664.5
+each agent reward: 3018664.5
+Episode 72 return: -9051285.0
+Episode: 72, total reward: 3014306.0
+each agent reward: 3014306.0
+Episode 73 return: -8773575.0
+Episode: 73, total reward: 2983567.0
+each agent reward: 2983567.0
+Episode 74 return: -9235237.0
+Episode: 74, total reward: 3075965.75
+each agent reward: 3075965.75
+Episode 75 return: -8734970.0
+Episode: 75, total reward: 3052945.75
+each agent reward: 3052945.75
+Episode 76 return: -8026341.0
+Episode: 76, total reward: 3016561.25
+each agent reward: 3016561.25
+Episode 77 return: -8022584.0
+Episode: 77, total reward: 2987792.25
+each agent reward: 2987792.25
+Episode 78 return: -8275979.0
+Episode: 78, total reward: 2996409.0
+each agent reward: 2996409.0
+Episode 79 return: -8133547.0
+Episode: 79, total reward: 2987880.0
+each agent reward: 2987880.0
+Episode 80 return: -7984394.0
+Episode: 80, total reward: 2981229.25
+each agent reward: 2981229.25
+Episode 81 return: -8042109.5
+Episode: 81, total reward: 3002048.25
+each agent reward: 3002048.25
+Episode 82 return: -8157363.5
+Episode: 82, total reward: 2979729.0
+each agent reward: 2979729.0
+Episode 83 return: -7931382.5
+Episode: 83, total reward: 3032372.5
+each agent reward: 3032372.5
+Episode 84 return: -8060349.0
+Episode: 84, total reward: 3006386.25
+each agent reward: 3006386.25
+Episode 85 return: -7797783.5
+Episode: 85, total reward: 3011692.75
+each agent reward: 3011692.75
+Episode 86 return: -8046635.5
+Episode: 86, total reward: 3000660.5
+each agent reward: 3000660.5
+Episode 87 return: -7548112.0
+Episode: 87, total reward: 3039365.0
+each agent reward: 3039365.0
+Episode 88 return: -7694957.5
+Episode: 88, total reward: 3047495.5
+each agent reward: 3047495.5
+Episode 89 return: -7868733.0
+Episode: 89, total reward: 3057310.75
+each agent reward: 3057310.75
+Episode 90 return: -7691630.0
+Episode: 90, total reward: 3049235.25
+each agent reward: 3049235.25
+Episode 91 return: -7717642.0
+Episode: 91, total reward: 3052361.5
+each agent reward: 3052361.5
+Episode 92 return: -7599854.5
+Episode: 92, total reward: 3059549.5
+each agent reward: 3059549.5
+Episode 93 return: -7270251.0
+Episode: 93, total reward: 3047174.0
+each agent reward: 3047174.0
+Episode 94 return: -7147923.0
+Episode: 94, total reward: 3045252.5
+each agent reward: 3045252.5
+Episode 95 return: -7096320.0
+Episode: 95, total reward: 3049513.25
+each agent reward: 3049513.25
+Episode 96 return: -7400855.5
+Episode: 96, total reward: 3039857.0
+each agent reward: 3039857.0
+Episode 97 return: -6760452.5
+Episode: 97, total reward: 3033128.75
+each agent reward: 3033128.75
+Episode 98 return: -6428567.0
+Episode: 98, total reward: 3026383.5
+each agent reward: 3026383.5
+Episode 99 return: -6994465.0
+Episode: 99, total reward: 2987781.5
+each agent reward: 2987781.5
+Episode 100 return: -6345220.0
+Episode: 100, total reward: 2987195.0
+each agent reward: 2987195.0
+Episode 101 return: -6476302.5
+Episode: 101, total reward: 3001450.25
+each agent reward: 3001450.25
+Episode 102 return: -6197871.5
+Episode: 102, total reward: 3040163.5
+each agent reward: 3040163.5
+Episode 103 return: -6762997.0
+Episode: 103, total reward: 3009084.5
+each agent reward: 3009084.5
+Episode 104 return: -6525893.5
+Episode: 104, total reward: 3039667.0
+each agent reward: 3039667.0
+Episode 105 return: -6049405.0
+Episode: 105, total reward: 3094240.5
+each agent reward: 3094240.5
+Episode 106 return: -6046006.0
+Episode: 106, total reward: 3016427.5
+each agent reward: 3016427.5
+Episode 107 return: -6257378.0
+Episode: 107, total reward: 3018050.0
+each agent reward: 3018050.0
+Episode 108 return: -6851945.0
+Episode: 108, total reward: 3040350.0
+each agent reward: 3040350.0
+Episode 109 return: -6796816.0
+Episode: 109, total reward: 3015550.25
+each agent reward: 3015550.25
+Episode 110 return: -6506032.5
+Episode: 110, total reward: 3014441.0
+each agent reward: 3014441.0
+Episode 111 return: -6247923.5
+Episode: 111, total reward: 3019490.75
+each agent reward: 3019490.75
+Episode 112 return: -5753500.0
+Episode: 112, total reward: 3039842.75
+each agent reward: 3039842.75
+Episode 113 return: -6291094.0
+Episode: 113, total reward: 3031718.75
+each agent reward: 3031718.75
+Episode 114 return: -5719012.5
+Episode: 114, total reward: 3031625.25
+each agent reward: 3031625.25
+Episode 115 return: -5534732.5
+Episode: 115, total reward: 3027439.5
+each agent reward: 3027439.5
+Episode 116 return: -5361447.0
+Episode: 116, total reward: 3018509.0
+each agent reward: 3018509.0
+Episode 117 return: -5501429.5
+Episode: 117, total reward: 3032675.25
+each agent reward: 3032675.25
+Episode 118 return: -5490639.5
+Episode: 118, total reward: 3011526.0
+each agent reward: 3011526.0
+Episode 119 return: -5265618.5
+Episode: 119, total reward: 3016354.25
+each agent reward: 3016354.25
+Episode 120 return: -5815266.0
+Episode: 120, total reward: 3015016.75
+each agent reward: 3015016.75
+Episode 121 return: -5942231.5
+Episode: 121, total reward: 2992405.75
+each agent reward: 2992405.75
+Episode 122 return: -5671395.5
+Episode: 122, total reward: 2994525.75
+each agent reward: 2994525.75
+Episode 123 return: -5185410.0
+Episode: 123, total reward: 3000098.75
+each agent reward: 3000098.75
+Episode 124 return: -5686678.5
+Episode: 124, total reward: 3021356.0
+each agent reward: 3021356.0
+Episode 125 return: -5893556.5
+Episode: 125, total reward: 3023779.5
+each agent reward: 3023779.5
+Episode 126 return: -4960072.0
+Episode: 126, total reward: 3035863.5
+each agent reward: 3035863.5
+Episode 127 return: -5667526.5
+Episode: 127, total reward: 3014970.0
+each agent reward: 3014970.0
+Episode 128 return: -5117258.5
+Episode: 128, total reward: 3024000.25
+each agent reward: 3024000.25
+Episode 129 return: -4771546.5
+Episode: 129, total reward: 3022000.25
+each agent reward: 3022000.25
+Episode 130 return: -5260185.5
+Episode: 130, total reward: 3020810.5
+each agent reward: 3020810.5
+Episode 131 return: -5115052.0
+Episode: 131, total reward: 3006626.0
+each agent reward: 3006626.0
+Episode 132 return: -4542589.5
+Episode: 132, total reward: 3010350.5
+each agent reward: 3010350.5
+Episode 133 return: -4752230.0
+Episode: 133, total reward: 3010718.75
+each agent reward: 3010718.75
+Episode 134 return: -4864391.5
+Episode: 134, total reward: 3012340.0
+each agent reward: 3012340.0
+Episode 135 return: -5202274.0
+Episode: 135, total reward: 3022310.0
+each agent reward: 3022310.0
+Episode 136 return: -4433889.5
+Episode: 136, total reward: 3012431.75
+each agent reward: 3012431.75
+Episode 137 return: -4727659.0
+Episode: 137, total reward: 3022796.0
+each agent reward: 3022796.0
+Episode 138 return: -4392513.5
+Episode: 138, total reward: 3016969.0
+each agent reward: 3016969.0
+Episode 139 return: -4710220.0
+Episode: 139, total reward: 2990085.0
+each agent reward: 2990085.0
+Episode 140 return: -4615960.5
+Episode: 140, total reward: 2996712.75
+each agent reward: 2996712.75
+Episode 141 return: -5234151.5
+Episode: 141, total reward: 3011756.5
+each agent reward: 3011756.5
+Episode 142 return: -5092200.0
+Episode: 142, total reward: 3009968.0
+each agent reward: 3009968.0
+Episode 143 return: -4728750.5
+Episode: 143, total reward: 3011524.5
+each agent reward: 3011524.5
+Episode 144 return: -4885146.5
+Episode: 144, total reward: 3006765.75
+each agent reward: 3006765.75
+Episode 145 return: -4562604.0
+Episode: 145, total reward: 3010992.0
+each agent reward: 3010992.0
+Episode 146 return: -5164571.5
+Episode: 146, total reward: 3013463.25
+each agent reward: 3013463.25
+Episode 147 return: -4602124.0
+Episode: 147, total reward: 3017822.75
+each agent reward: 3017822.75
+Episode 148 return: -4471505.5
+Episode: 148, total reward: 3020212.5
+each agent reward: 3020212.5
+Episode 149 return: -4811608.5
+Episode: 149, total reward: 3020212.5
+each agent reward: 3020212.5
+Episode 150 return: -4607374.5
+Episode: 150, total reward: 3021785.5
+each agent reward: 3021785.5
+Episode 151 return: -4405396.0
+Episode: 151, total reward: 3020923.0
+each agent reward: 3020923.0
+Episode 152 return: -4750337.5
+Episode: 152, total reward: 3000245.75
+each agent reward: 3000245.75
+Episode 153 return: -4727069.5
+Episode: 153, total reward: 3007552.25
+each agent reward: 3007552.25
+Episode 154 return: -4453483.0
+Episode: 154, total reward: 2997408.5
+each agent reward: 2997408.5
+Episode 155 return: -4454608.5
+Episode: 155, total reward: 2988482.5
+each agent reward: 2988482.5
+Episode 156 return: -4465553.5
+Episode: 156, total reward: 2986192.5
+each agent reward: 2986192.5
+Episode 157 return: -4820348.5
+Episode: 157, total reward: 3000877.0
+each agent reward: 3000877.0
+Episode 158 return: -4389222.0
+Episode: 158, total reward: 3017322.0
+each agent reward: 3017322.0
+Episode 159 return: -4746239.5
+Episode: 159, total reward: 3007552.25
+each agent reward: 3007552.25
+Episode 160 return: -4674905.5
+Episode: 160, total reward: 3014111.25
+each agent reward: 3014111.25
+Episode 161 return: -4679694.0
+Episode: 161, total reward: 3013500.25
+each agent reward: 3013500.25
+Episode 162 return: -5086246.5
+Episode: 162, total reward: 3013500.25
+each agent reward: 3013500.25
+Episode 163 return: -4969425.0
+Episode: 163, total reward: 3015270.25
+each agent reward: 3015270.25
+Episode 164 return: -4484927.0
+Episode: 164, total reward: 3021745.75
+each agent reward: 3021745.75
+Episode 165 return: -4409125.5
+Episode: 165, total reward: 3014128.0
+each agent reward: 3014128.0
+Episode 166 return: -4507793.0
+Episode: 166, total reward: 3014128.0
+each agent reward: 3014128.0
+Episode 167 return: -4361243.5
+Episode: 167, total reward: 3000528.5
+each agent reward: 3000528.5
+Episode 168 return: -4776069.5
+Episode: 168, total reward: 2993823.75
+each agent reward: 2993823.75
+Episode 169 return: -4788184.5
+Episode: 169, total reward: 2994168.0
+each agent reward: 2994168.0
+Episode 170 return: -4682977.0
+Episode: 170, total reward: 3000395.75
+each agent reward: 3000395.75
+Episode 171 return: -4608823.5
+Episode: 171, total reward: 2997139.75
+each agent reward: 2997139.75
+Episode 172 return: -5031948.0
+Episode: 172, total reward: 3011704.75
+each agent reward: 3011704.75
+Episode 173 return: -4767310.0
+Episode: 173, total reward: 3013364.75
+each agent reward: 3013364.75
+Episode 174 return: -4779430.0
+Episode: 174, total reward: 3013364.75
+each agent reward: 3013364.75
+Episode 175 return: -5030086.5
+Episode: 175, total reward: 3012480.75
+each agent reward: 3012480.75
+Episode 176 return: -4516293.5
+Episode: 176, total reward: 2996291.0
+each agent reward: 2996291.0
+Episode 177 return: -4621966.0
+Episode: 177, total reward: 3000292.25
+each agent reward: 3000292.25
+Episode 178 return: -4617043.5
+Episode: 178, total reward: 2999801.75
+each agent reward: 2999801.75
+Episode 179 return: -4303087.5
+Episode: 179, total reward: 3024178.25
+each agent reward: 3024178.25
+Episode 180 return: -3981075.75
+Episode: 180, total reward: 3001332.0
+each agent reward: 3001332.0
+Episode 181 return: -4988487.0
+Episode: 181, total reward: 3005684.25
+each agent reward: 3005684.25
+Episode 182 return: -4606685.5
+Episode: 182, total reward: 2996212.0
+each agent reward: 2996212.0
+Episode 183 return: -4183661.75
+Episode: 183, total reward: 2985350.75
+each agent reward: 2985350.75
+Episode 184 return: -4634717.5
+Episode: 184, total reward: 2979901.0
+each agent reward: 2979901.0
+Episode 185 return: -4561234.0
+Episode: 185, total reward: 3001325.75
+each agent reward: 3001325.75
+Episode 186 return: -4584222.5
+Episode: 186, total reward: 3012797.5
+each agent reward: 3012797.5
+Episode 187 return: -4535903.5
+Episode: 187, total reward: 3002993.75
+each agent reward: 3002993.75
+Episode 188 return: -4381467.5
+Episode: 188, total reward: 3012498.0
+each agent reward: 3012498.0
+Episode 189 return: -4522453.5
+Episode: 189, total reward: 3002863.5
+each agent reward: 3002863.5
+Episode 190 return: -4746180.5
+Episode: 190, total reward: 2999747.5
+each agent reward: 2999747.5
+Episode 191 return: -4667810.5
+Episode: 191, total reward: 2994810.75
+each agent reward: 2994810.75
+Episode 192 return: -4458564.0
+Episode: 192, total reward: 2977826.5
+each agent reward: 2977826.5
+Episode 193 return: -4408852.5
+Episode: 193, total reward: 2987451.5
+each agent reward: 2987451.5
+Episode 194 return: -4984155.0
+Episode: 194, total reward: 2975590.0
+each agent reward: 2975590.0
+Episode 195 return: -4266674.0
+Episode: 195, total reward: 2985434.75
+each agent reward: 2985434.75
+Episode 196 return: -4456554.0
+Episode: 196, total reward: 2985975.0
+each agent reward: 2985975.0
+Episode 197 return: -4567209.0
+Episode: 197, total reward: 2996186.0
+each agent reward: 2996186.0
+Episode 198 return: -4636636.5
+Episode: 198, total reward: 2994087.0
+each agent reward: 2994087.0
+Episode 199 return: -4489509.0
+Episode: 199, total reward: 3010175.5
+each agent reward: 3010175.5
+Episode 200 return: -4882405.0
+Episode: 200, total reward: 3010175.5
+each agent reward: 3010175.5
+Episode 201 return: -4559378.0
+Episode: 201, total reward: 3010175.5
+each agent reward: 3010175.5
+Episode 202 return: -4808813.0
+Episode: 202, total reward: 3000255.5
+each agent reward: 3000255.5
+Episode 203 return: -4423259.5
+Episode: 203, total reward: 3001593.5
+each agent reward: 3001593.5
+Episode 204 return: -4624756.5
+Episode: 204, total reward: 3010175.5
+each agent reward: 3010175.5
+Episode 205 return: -4141050.0
+Episode: 205, total reward: 3014756.0
+each agent reward: 3014756.0
+Episode 206 return: -4740359.0
+Episode: 206, total reward: 3010272.0
+each agent reward: 3010272.0
+Episode 207 return: -4703121.0
+Episode: 207, total reward: 3012796.0
+each agent reward: 3012796.0
+Episode 208 return: -4702841.0
+Episode: 208, total reward: 3016572.0
+each agent reward: 3016572.0
+Episode 209 return: -4403726.5
+Episode: 209, total reward: 3014923.75
+each agent reward: 3014923.75
+Episode 210 return: -4156455.25
+Episode: 210, total reward: 3003443.25
+each agent reward: 3003443.25
+Episode 211 return: -4403910.0
+Episode: 211, total reward: 2992359.0
+each agent reward: 2992359.0
+Episode 212 return: -4604298.5
+Episode: 212, total reward: 2999867.25
+each agent reward: 2999867.25
+Episode 213 return: -4558870.0
+Episode: 213, total reward: 2998013.5
+each agent reward: 2998013.5
+Episode 214 return: -4457422.5
+Episode: 214, total reward: 2999419.25
+each agent reward: 2999419.25
+Episode 215 return: -4569478.5
+Episode: 215, total reward: 3000786.5
+each agent reward: 3000786.5
+Episode 216 return: -4767656.0
+Episode: 216, total reward: 3000057.0
+each agent reward: 3000057.0
+Episode 217 return: -4773159.0
+Episode: 217, total reward: 3002206.25
+each agent reward: 3002206.25
+Episode 218 return: -4683221.0
+Episode: 218, total reward: 3001636.0
+each agent reward: 3001636.0
+Episode 219 return: -4442389.5
+Episode: 219, total reward: 3002504.75
+each agent reward: 3002504.75
+Episode 220 return: -4574239.5
+Episode: 220, total reward: 2998762.25
+each agent reward: 2998762.25
+Episode 221 return: -4348145.5
+Episode: 221, total reward: 2992827.25
+each agent reward: 2992827.25
+Episode 222 return: -4300320.0
+Episode: 222, total reward: 2996466.0
+each agent reward: 2996466.0
+Episode 223 return: -4797044.5
+Episode: 223, total reward: 3004642.75
+each agent reward: 3004642.75
+Episode 224 return: -4372522.0
+Episode: 224, total reward: 3001978.5
+each agent reward: 3001978.5
+Episode 225 return: -4645417.0
+Episode: 225, total reward: 3007238.75
+each agent reward: 3007238.75
+Episode 226 return: -4762803.5
+Episode: 226, total reward: 3002554.0
+each agent reward: 3002554.0
+Episode 227 return: -4518244.0
+Episode: 227, total reward: 2994369.5
+each agent reward: 2994369.5
+Episode 228 return: -4813673.0
+Episode: 228, total reward: 2996996.75
+each agent reward: 2996996.75
+Episode 229 return: -4615684.5
+Episode: 229, total reward: 2994686.75
+each agent reward: 2994686.75
+Episode 230 return: -4744770.5
+Episode: 230, total reward: 2992291.25
+each agent reward: 2992291.25
+Episode 231 return: -4646204.5
+Episode: 231, total reward: 2989570.0
+each agent reward: 2989570.0
+Episode 232 return: -4816680.0
+Episode: 232, total reward: 2988701.5
+each agent reward: 2988701.5
+Episode 233 return: -4275691.5
+Episode: 233, total reward: 2988701.5
+each agent reward: 2988701.5
+Episode 234 return: -4822536.5
+Episode: 234, total reward: 2990927.75
+each agent reward: 2990927.75
+Episode 235 return: -4570612.0
+Episode: 235, total reward: 3001483.25
+each agent reward: 3001483.25
+Episode 236 return: -4558993.5
+Episode: 236, total reward: 2999362.5
+each agent reward: 2999362.5
+Episode 237 return: -4672166.5
+Episode: 237, total reward: 3000635.5
+each agent reward: 3000635.5
+Episode 238 return: -4381084.5
+Episode: 238, total reward: 2995569.25
+each agent reward: 2995569.25
+Episode 239 return: -4592409.5
+Episode: 239, total reward: 2998101.0
+each agent reward: 2998101.0
+Episode 240 return: -4716283.0
+Episode: 240, total reward: 3000756.5
+each agent reward: 3000756.5
+Episode 241 return: -4900611.5
+Episode: 241, total reward: 3000958.0
+each agent reward: 3000958.0
+Episode 242 return: -4734600.0
+Episode: 242, total reward: 2996080.25
+each agent reward: 2996080.25
+Episode 243 return: -4674329.5
+Episode: 243, total reward: 3000934.0
+each agent reward: 3000934.0
+Episode 244 return: -4645657.0
+Episode: 244, total reward: 2994110.25
+each agent reward: 2994110.25
+Episode 245 return: -4777884.5
+Episode: 245, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 246 return: -4706669.0
+Episode: 246, total reward: 2988704.75
+each agent reward: 2988704.75
+Episode 247 return: -4359218.5
+Episode: 247, total reward: 2988704.75
+each agent reward: 2988704.75
+Episode 248 return: -4259201.5
+Episode: 248, total reward: 2989009.0
+each agent reward: 2989009.0
+Episode 249 return: -4765767.5
+Episode: 249, total reward: 2990964.25
+each agent reward: 2990964.25
+Episode 250 return: -4647012.5
+Episode: 250, total reward: 2991921.5
+each agent reward: 2991921.5
+Episode 251 return: -4857020.5
+Episode: 251, total reward: 3001364.5
+each agent reward: 3001364.5
+Episode 252 return: -4883478.5
+Episode: 252, total reward: 3001484.25
+each agent reward: 3001484.25
+Episode 253 return: -4497751.5
+Episode: 253, total reward: 2998258.5
+each agent reward: 2998258.5
+Episode 254 return: -4335525.5
+Episode: 254, total reward: 2993213.25
+each agent reward: 2993213.25
+Episode 255 return: -4380033.5
+Episode: 255, total reward: 2990491.5
+each agent reward: 2990491.5
+Episode 256 return: -4400545.5
+Episode: 256, total reward: 2998577.0
+each agent reward: 2998577.0
+Episode 257 return: -4859529.5
+Episode: 257, total reward: 3008348.75
+each agent reward: 3008348.75
+Episode 258 return: -4678470.0
+Episode: 258, total reward: 3007498.75
+each agent reward: 3007498.75
+Episode 259 return: -4974813.5
+Episode: 259, total reward: 3006550.75
+each agent reward: 3006550.75
+Episode 260 return: -4788758.5
+Episode: 260, total reward: 3005008.25
+each agent reward: 3005008.25
+Episode 261 return: -4549707.5
+Episode: 261, total reward: 3006998.75
+each agent reward: 3006998.75
+Episode 262 return: -4818033.0
+Episode: 262, total reward: 3006998.75
+each agent reward: 3006998.75
+Episode 263 return: -4793292.5
+Episode: 263, total reward: 2991898.25
+each agent reward: 2991898.25
+Episode 264 return: -4410328.0
+Episode: 264, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 265 return: -4549187.5
+Episode: 265, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 266 return: -4513371.5
+Episode: 266, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 267 return: -4502044.0
+Episode: 267, total reward: 2994474.0
+each agent reward: 2994474.0
+Episode 268 return: -4336321.0
+Episode: 268, total reward: 2997845.25
+each agent reward: 2997845.25
+Episode 269 return: -4830311.0
+Episode: 269, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 270 return: -4661225.0
+Episode: 270, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 271 return: -4642512.0
+Episode: 271, total reward: 2993091.25
+each agent reward: 2993091.25
+Episode 272 return: -4334391.0
+Episode: 272, total reward: 2995800.25
+each agent reward: 2995800.25
+Episode 273 return: -4503548.0
+Episode: 273, total reward: 2994897.25
+each agent reward: 2994897.25
+Episode 274 return: -4479458.0
+Episode: 274, total reward: 2990039.25
+each agent reward: 2990039.25
+Episode 275 return: -4483536.0
+Episode: 275, total reward: 2998972.5
+each agent reward: 2998972.5
+Episode 276 return: -4509019.5
+Episode: 276, total reward: 3009415.0
+each agent reward: 3009415.0
+Episode 277 return: -4478376.0
+Episode: 277, total reward: 3009415.0
+each agent reward: 3009415.0
+Episode 278 return: -4611807.5
+Episode: 278, total reward: 3008513.5
+each agent reward: 3008513.5
+Episode 279 return: -4426367.0
+Episode: 279, total reward: 3010864.75
+each agent reward: 3010864.75
+Episode 280 return: -5165573.0
+Episode: 280, total reward: 3002234.0
+each agent reward: 3002234.0
+Episode 281 return: -4320503.0
+Episode: 281, total reward: 3003108.0
+each agent reward: 3003108.0
+Episode 282 return: -4454233.5
+Episode: 282, total reward: 3000009.0
+each agent reward: 3000009.0
+Episode 283 return: -4496364.0
+Episode: 283, total reward: 2994039.0
+each agent reward: 2994039.0
+Episode 284 return: -4774392.5
+Episode: 284, total reward: 2989166.75
+each agent reward: 2989166.75
+Episode 285 return: -4198348.5
+Episode: 285, total reward: 2990544.75
+each agent reward: 2990544.75
+Episode 286 return: -4765879.5
+Episode: 286, total reward: 2989302.0
+each agent reward: 2989302.0
+Episode 287 return: -4575835.0
+Episode: 287, total reward: 2991660.5
+each agent reward: 2991660.5
+Episode 288 return: -4302985.0
+Episode: 288, total reward: 3007522.75
+each agent reward: 3007522.75
+Episode 289 return: -4447704.0
+Episode: 289, total reward: 3012173.5
+each agent reward: 3012173.5
+Episode 290 return: -4666726.5
+Episode: 290, total reward: 3018256.75
+each agent reward: 3018256.75
+Episode 291 return: -4382474.5
+Episode: 291, total reward: 3011402.0
+each agent reward: 3011402.0
+Episode 292 return: -4785790.0
+Episode: 292, total reward: 3008829.75
+each agent reward: 3008829.75
+Episode 293 return: -4881482.5
+Episode: 293, total reward: 3008829.75
+each agent reward: 3008829.75
+Episode 294 return: -4546587.5
+Episode: 294, total reward: 3010955.75
+each agent reward: 3010955.75
+Episode 295 return: -4643085.0
+Episode: 295, total reward: 3016216.0
+each agent reward: 3016216.0
+Episode 296 return: -4396161.5
+Episode: 296, total reward: 3017920.25
+each agent reward: 3017920.25
+Episode 297 return: -5024363.0
+Episode: 297, total reward: 3010960.0
+each agent reward: 3010960.0
+Episode 298 return: -4594531.5
+Episode: 298, total reward: 3012194.0
+each agent reward: 3012194.0
+Episode 299 return: -4548723.5
+Episode: 299, total reward: 3006072.25
+each agent reward: 3006072.25
+Episode 300 return: -4483837.5
+Episode: 300, total reward: 3005788.25
+each agent reward: 3005788.25
+Episode 301 return: -4153575.25
+Episode: 301, total reward: 3006071.25
+each agent reward: 3006071.25
+Episode 302 return: -4867155.0
+Episode: 302, total reward: 3008460.0
+each agent reward: 3008460.0
+Episode 303 return: -4612238.0
+Episode: 303, total reward: 3006996.25
+each agent reward: 3006996.25
+Episode 304 return: -4513509.5
+Episode: 304, total reward: 3010509.25
+each agent reward: 3010509.25
+Episode 305 return: -4668415.5
+Episode: 305, total reward: 3013091.75
+each agent reward: 3013091.75
+Episode 306 return: -4393154.0
+Episode: 306, total reward: 3015994.0
+each agent reward: 3015994.0
+Episode 307 return: -4821888.5
+Episode: 307, total reward: 3013710.75
+each agent reward: 3013710.75
+Episode 308 return: -4629002.0
+Episode: 308, total reward: 2999620.75
+each agent reward: 2999620.75
+Episode 309 return: -4530307.0
+Episode: 309, total reward: 2990335.0
+each agent reward: 2990335.0
+Episode 310 return: -4360026.0
+Episode: 310, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 311 return: -4474931.0
+Episode: 311, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 312 return: -4731942.5
+Episode: 312, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 313 return: -4521933.0
+Episode: 313, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 314 return: -4517404.0
+Episode: 314, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 315 return: -4654834.5
+Episode: 315, total reward: 2997203.25
+each agent reward: 2997203.25
+Episode 316 return: -5061772.0
+Episode: 316, total reward: 2995440.0
+each agent reward: 2995440.0
+Episode 317 return: -4525276.0
+Episode: 317, total reward: 2989237.75
+each agent reward: 2989237.75
+Episode 318 return: -4566705.0
+Episode: 318, total reward: 2989376.5
+each agent reward: 2989376.5
+Episode 319 return: -4635741.5
+Episode: 319, total reward: 2989902.25
+each agent reward: 2989902.25
+Episode 320 return: -4528270.5
+Episode: 320, total reward: 2987859.25
+each agent reward: 2987859.25
+Episode 321 return: -4320548.5
+Episode: 321, total reward: 2992228.0
+each agent reward: 2992228.0
+Episode 322 return: -4549881.0
+Episode: 322, total reward: 2989747.75
+each agent reward: 2989747.75
+Episode 323 return: -4929666.0
+Episode: 323, total reward: 2988665.0
+each agent reward: 2988665.0
+Episode 324 return: -4496899.5
+Episode: 324, total reward: 2996491.5
+each agent reward: 2996491.5
+Episode 325 return: -4594408.0
+Episode: 325, total reward: 2999719.75
+each agent reward: 2999719.75
+Episode 326 return: -4640385.0
+Episode: 326, total reward: 3002305.5
+each agent reward: 3002305.5
+Episode 327 return: -4544755.0
+Episode: 327, total reward: 3004615.0
+each agent reward: 3004615.0
+Episode 328 return: -4318935.5
+Episode: 328, total reward: 2999585.0
+each agent reward: 2999585.0
+Episode 329 return: -5026615.5
+Episode: 329, total reward: 2994512.75
+each agent reward: 2994512.75
+Episode 330 return: -4763881.0
+Episode: 330, total reward: 2988894.5
+each agent reward: 2988894.5
+Episode 331 return: -4361393.0
+Episode: 331, total reward: 2991309.75
+each agent reward: 2991309.75
+Episode 332 return: -4633575.0
+Episode: 332, total reward: 2993236.0
+each agent reward: 2993236.0
+Episode 333 return: -4558165.5
+Episode: 333, total reward: 2998616.75
+each agent reward: 2998616.75
+Episode 334 return: -4722650.5
+Episode: 334, total reward: 2998616.75
+each agent reward: 2998616.75
+Episode 335 return: -4693115.5
+Episode: 335, total reward: 2998616.75
+each agent reward: 2998616.75
+Episode 336 return: -4534264.5
+Episode: 336, total reward: 2999103.0
+each agent reward: 2999103.0
+Episode 337 return: -4504942.5
+Episode: 337, total reward: 2998760.5
+each agent reward: 2998760.5
+Episode 338 return: -4580242.0
+Episode: 338, total reward: 2998999.0
+each agent reward: 2998999.0
+Episode 339 return: -4401887.0
+Episode: 339, total reward: 3006101.75
+each agent reward: 3006101.75
+Episode 340 return: -4615972.0
+Episode: 340, total reward: 3010473.75
+each agent reward: 3010473.75
+Episode 341 return: -4767633.0
+Episode: 341, total reward: 3011515.5
+each agent reward: 3011515.5
+Episode 342 return: -4641484.5
+Episode: 342, total reward: 3016126.0
+each agent reward: 3016126.0
+Episode 343 return: -4246197.5
+Episode: 343, total reward: 3016948.0
+each agent reward: 3016948.0
+Episode 344 return: -4947122.0
+Episode: 344, total reward: 3010666.25
+each agent reward: 3010666.25
+Episode 345 return: -4685728.0
+Episode: 345, total reward: 3011699.25
+each agent reward: 3011699.25
+Episode 346 return: -4472205.5
+Episode: 346, total reward: 3014890.0
+each agent reward: 3014890.0
+Episode 347 return: -4334912.5
+Episode: 347, total reward: 3017142.5
+each agent reward: 3017142.5
+Episode 348 return: -4470086.5
+Episode: 348, total reward: 3016503.5
+each agent reward: 3016503.5
+Episode 349 return: -4379341.5
+Episode: 349, total reward: 3016541.25
+each agent reward: 3016541.25
+Episode 350 return: -4766665.0
+Episode: 350, total reward: 3016180.5
+each agent reward: 3016180.5
+Episode 351 return: -4458863.0
+Episode: 351, total reward: 3016893.5
+each agent reward: 3016893.5
+Episode 352 return: -4730116.0
+Episode: 352, total reward: 3015413.0
+each agent reward: 3015413.0
+Episode 353 return: -4769711.0
+Episode: 353, total reward: 3010666.25
+each agent reward: 3010666.25
+Episode 354 return: -4679909.5
+Episode: 354, total reward: 3010170.5
+each agent reward: 3010170.5
+Episode 355 return: -4672440.5
+Episode: 355, total reward: 3010170.5
+each agent reward: 3010170.5
+Episode 356 return: -4582902.0
+Episode: 356, total reward: 3011049.0
+each agent reward: 3011049.0
+Episode 357 return: -4792428.5
+Episode: 357, total reward: 3010522.0
+each agent reward: 3010522.0
+Episode 358 return: -4886574.5
+Episode: 358, total reward: 3009091.5
+each agent reward: 3009091.5
+Episode 359 return: -4955143.0
+Episode: 359, total reward: 3009390.75
+each agent reward: 3009390.75
+Episode 360 return: -4686417.0
+Episode: 360, total reward: 3008800.5
+each agent reward: 3008800.5
+Episode 361 return: -4498316.5
+Episode: 361, total reward: 3009614.0
+each agent reward: 3009614.0
+Episode 362 return: -4791419.0
+Episode: 362, total reward: 3011307.5
+each agent reward: 3011307.5
+Episode 363 return: -4776898.0
+Episode: 363, total reward: 3013173.5
+each agent reward: 3013173.5
+Episode 364 return: -4704232.5
+Episode: 364, total reward: 3014461.25
+each agent reward: 3014461.25
+Episode 365 return: -4445807.0
+Episode: 365, total reward: 3010626.5
+each agent reward: 3010626.5
+Episode 366 return: -4450647.5
+Episode: 366, total reward: 3009581.0
+each agent reward: 3009581.0
+Episode 367 return: -4825272.0
+Episode: 367, total reward: 3013053.5
+each agent reward: 3013053.5
+Episode 368 return: -4651436.0
+Episode: 368, total reward: 3014870.5
+each agent reward: 3014870.5
+Episode 369 return: -4418501.0
+Episode: 369, total reward: 3013218.75
+each agent reward: 3013218.75
+Episode 370 return: -4638802.0
+Episode: 370, total reward: 3013018.25
+each agent reward: 3013018.25
+Episode 371 return: -5014876.0
+Episode: 371, total reward: 3015197.25
+each agent reward: 3015197.25
+Episode 372 return: -4563307.0
+Episode: 372, total reward: 3012735.5
+each agent reward: 3012735.5
+Episode 373 return: -4942093.5
+Episode: 373, total reward: 3009247.5
+each agent reward: 3009247.5
+Episode 374 return: -4330946.0
+Episode: 374, total reward: 3009247.5
+each agent reward: 3009247.5
+Episode 375 return: -4528471.5
+Episode: 375, total reward: 3010170.5
+each agent reward: 3010170.5
+Episode 376 return: -4779915.0
+Episode: 376, total reward: 3021460.0
+each agent reward: 3021460.0
+Episode 377 return: -4187288.5
+Episode: 377, total reward: 3021460.0
+each agent reward: 3021460.0
+Episode 378 return: -5015055.0
+Episode: 378, total reward: 3015114.25
+each agent reward: 3015114.25
+Episode 379 return: -4903068.5
+Episode: 379, total reward: 3010745.0
+each agent reward: 3010745.0
+Episode 380 return: -4032725.75
+Episode: 380, total reward: 3010745.0
+each agent reward: 3010745.0
+Episode 381 return: -4420639.5
+Episode: 381, total reward: 3010355.75
+each agent reward: 3010355.75
+Episode 382 return: -4587594.0
+Episode: 382, total reward: 3010769.75
+each agent reward: 3010769.75
+Episode 383 return: -4551901.0
+Episode: 383, total reward: 3023716.5
+each agent reward: 3023716.5
+Episode 384 return: -4502079.0
+Episode: 384, total reward: 3025409.5
+each agent reward: 3025409.5
+Episode 385 return: -4335255.0
+Episode: 385, total reward: 3023691.5
+each agent reward: 3023691.5
+Episode 386 return: -4544111.5
+Episode: 386, total reward: 3025087.0
+each agent reward: 3025087.0
+Episode 387 return: -4437742.0
+Episode: 387, total reward: 3022585.25
+each agent reward: 3022585.25
+Episode 388 return: -4404912.0
+Episode: 388, total reward: 3012642.75
+each agent reward: 3012642.75
+Episode 389 return: -4441956.5
+Episode: 389, total reward: 3019925.0
+each agent reward: 3019925.0
+Episode 390 return: -4419105.5
+Episode: 390, total reward: 3022481.5
+each agent reward: 3022481.5
+Episode 391 return: -4786836.0
+Episode: 391, total reward: 3020912.0
+each agent reward: 3020912.0
+Episode 392 return: -4474179.0
+Episode: 392, total reward: 3018270.5
+each agent reward: 3018270.5
+Episode 393 return: -4466468.0
+Episode: 393, total reward: 3010197.25
+each agent reward: 3010197.25
+Episode 394 return: -4611321.0
+Episode: 394, total reward: 3009312.25
+each agent reward: 3009312.25
+Episode 395 return: -4352241.5
+Episode: 395, total reward: 3010197.25
+each agent reward: 3010197.25
+Episode 396 return: -4286567.5
+Episode: 396, total reward: 3011338.25
+each agent reward: 3011338.25
+Episode 397 return: -4639416.0
+Episode: 397, total reward: 3011838.0
+each agent reward: 3011838.0
+Episode 398 return: -4672875.0
+Episode: 398, total reward: 3012978.5
+each agent reward: 3012978.5
+Episode 399 return: -4255759.5
+Episode: 399, total reward: 3012978.5
+each agent reward: 3012978.5
+Episode 400 return: -4280757.5
+Episode: 400, total reward: 3009910.0
+each agent reward: 3009910.0
+Episode 401 return: -4968357.5
+Episode: 401, total reward: 3013406.0
+each agent reward: 3013406.0
+Episode 402 return: -4707663.0
+Episode: 402, total reward: 3012677.75
+each agent reward: 3012677.75
+Episode 403 return: -4539445.0
+Episode: 403, total reward: 3014253.0
+each agent reward: 3014253.0
+Episode 404 return: -4547224.5
+Episode: 404, total reward: 3015737.0
+each agent reward: 3015737.0
+Episode 405 return: -5034850.0
+Episode: 405, total reward: 3014237.0
+each agent reward: 3014237.0
+Episode 406 return: -4692058.5
+Episode: 406, total reward: 3023833.75
+each agent reward: 3023833.75
+Episode 407 return: -4591883.5
+Episode: 407, total reward: 3032972.0
+each agent reward: 3032972.0
+Episode 408 return: -4888991.5
+Episode: 408, total reward: 3023689.25
+each agent reward: 3023689.25
+Episode 409 return: -4605686.0
+Episode: 409, total reward: 3022582.5
+each agent reward: 3022582.5
+Episode 410 return: -4516135.5
+Episode: 410, total reward: 3012074.5
+each agent reward: 3012074.5
+Episode 411 return: -4572814.0
+Episode: 411, total reward: 3012074.5
+each agent reward: 3012074.5
+Episode 412 return: -4450280.0
+Episode: 412, total reward: 3012777.75
+each agent reward: 3012777.75
+Episode 413 return: -4549392.0
+Episode: 413, total reward: 3022001.0
+each agent reward: 3022001.0
+Episode 414 return: -4496411.5
+Episode: 414, total reward: 3020994.5
+each agent reward: 3020994.5
+Episode 415 return: -4895397.0
+Episode: 415, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 416 return: -4387959.0
+Episode: 416, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 417 return: -4720163.5
+Episode: 417, total reward: 3029367.75
+each agent reward: 3029367.75
+Episode 418 return: -4707712.0
+Episode: 418, total reward: 3032511.0
+each agent reward: 3032511.0
+Episode 419 return: -4556065.0
+Episode: 419, total reward: 3032386.75
+each agent reward: 3032386.75
+Episode 420 return: -4481300.5
+Episode: 420, total reward: 3032404.25
+each agent reward: 3032404.25
+Episode 421 return: -4874283.5
+Episode: 421, total reward: 3032511.0
+each agent reward: 3032511.0
+Episode 422 return: -4640262.5
+Episode: 422, total reward: 3032511.0
+each agent reward: 3032511.0
+Episode 423 return: -4497783.0
+Episode: 423, total reward: 3032511.0
+each agent reward: 3032511.0
+Episode 424 return: -4819370.0
+Episode: 424, total reward: 3032511.0
+each agent reward: 3032511.0
+Episode 425 return: -4409459.0
+Episode: 425, total reward: 3033075.5
+each agent reward: 3033075.5
+Episode 426 return: -4521774.0
+Episode: 426, total reward: 3026186.5
+each agent reward: 3026186.5
+Episode 427 return: -4517626.5
+Episode: 427, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 428 return: -4511089.0
+Episode: 428, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 429 return: -4576619.5
+Episode: 429, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 430 return: -4551839.5
+Episode: 430, total reward: 3020890.5
+each agent reward: 3020890.5
+Episode 431 return: -4556791.0
+Episode: 431, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 432 return: -4518176.5
+Episode: 432, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 433 return: -4605880.5
+Episode: 433, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 434 return: -4994042.0
+Episode: 434, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 435 return: -4419048.5
+Episode: 435, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 436 return: -4148058.75
+Episode: 436, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 437 return: -4690453.5
+Episode: 437, total reward: 3020903.75
+each agent reward: 3020903.75
+Episode 438 return: -4750734.0
+Episode: 438, total reward: 3020903.75
+each agent reward: 3020903.75
+Episode 439 return: -4574291.5
+Episode: 439, total reward: 3020868.5
+each agent reward: 3020868.5
+Episode 440 return: -4306996.0
+Episode: 440, total reward: 3020519.5
+each agent reward: 3020519.5
+Episode 441 return: -4573407.0
+Episode: 441, total reward: 3021307.25
+each agent reward: 3021307.25
+Episode 442 return: -4364844.0
+Episode: 442, total reward: 3023494.5
+each agent reward: 3023494.5
+Episode 443 return: -4559209.5
+Episode: 443, total reward: 3028701.5
+each agent reward: 3028701.5
+Episode 444 return: -4528882.0
+Episode: 444, total reward: 3039745.0
+each agent reward: 3039745.0
+Episode 445 return: -4386289.5
+Episode: 445, total reward: 3041259.25
+each agent reward: 3041259.25
+Episode 446 return: -4446102.5
+Episode: 446, total reward: 3040746.0
+each agent reward: 3040746.0
+Episode 447 return: -4339564.5
+Episode: 447, total reward: 3041882.25
+each agent reward: 3041882.25
+Episode 448 return: -4761539.5
+Episode: 448, total reward: 3042236.5
+each agent reward: 3042236.5
+Episode 449 return: -4628818.0
+Episode: 449, total reward: 3022883.75
+each agent reward: 3022883.75
+Episode 450 return: -4293040.0
+Episode: 450, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 451 return: -4363796.5
+Episode: 451, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 452 return: -4644686.5
+Episode: 452, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 453 return: -4697444.0
+Episode: 453, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 454 return: -4729319.0
+Episode: 454, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 455 return: -4463832.0
+Episode: 455, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 456 return: -4963734.0
+Episode: 456, total reward: 3031528.5
+each agent reward: 3031528.5
+Episode 457 return: -4337988.0
+Episode: 457, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 458 return: -4480625.5
+Episode: 458, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 459 return: -4621408.0
+Episode: 459, total reward: 3030510.75
+each agent reward: 3030510.75
+Episode 460 return: -4609643.5
+Episode: 460, total reward: 3032242.25
+each agent reward: 3032242.25
+Episode 461 return: -4530975.5
+Episode: 461, total reward: 3030647.75
+each agent reward: 3030647.75
+Episode 462 return: -4204496.5
+Episode: 462, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 463 return: -4935285.5
+Episode: 463, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 464 return: -4617500.0
+Episode: 464, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 465 return: -4746568.5
+Episode: 465, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 466 return: -4392013.5
+Episode: 466, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 467 return: -4320301.0
+Episode: 467, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 468 return: -4518926.0
+Episode: 468, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 469 return: -4749278.0
+Episode: 469, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 470 return: -4313326.0
+Episode: 470, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 471 return: -4651706.0
+Episode: 471, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 472 return: -4836990.0
+Episode: 472, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 473 return: -4572948.5
+Episode: 473, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 474 return: -4552201.0
+Episode: 474, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 475 return: -4367199.0
+Episode: 475, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 476 return: -4165820.25
+Episode: 476, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 477 return: -4585952.5
+Episode: 477, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 478 return: -4840116.0
+Episode: 478, total reward: 3022600.25
+each agent reward: 3022600.25
+Episode 479 return: -4817813.0
+Episode: 479, total reward: 3029826.5
+each agent reward: 3029826.5
+Episode 480 return: -4543936.5
+Episode: 480, total reward: 3025514.5
+each agent reward: 3025514.5
+Episode 481 return: -4611835.0
+Episode: 481, total reward: 3021823.5
+each agent reward: 3021823.5
+Episode 482 return: -4830538.5
+Episode: 482, total reward: 3021823.5
+each agent reward: 3021823.5
+Episode 483 return: -4588038.0
+Episode: 483, total reward: 3021019.25
+each agent reward: 3021019.25
+Episode 484 return: -4413700.0
+Episode: 484, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 485 return: -4226742.5
+Episode: 485, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 486 return: -4497822.5
+Episode: 486, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 487 return: -4566658.5
+Episode: 487, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 488 return: -4634291.5
+Episode: 488, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 489 return: -4486106.0
+Episode: 489, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 490 return: -4460617.0
+Episode: 490, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 491 return: -4259318.5
+Episode: 491, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 492 return: -4385575.0
+Episode: 492, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 493 return: -4729703.5
+Episode: 493, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 494 return: -4713454.5
+Episode: 494, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 495 return: -4499410.0
+Episode: 495, total reward: 3022027.0
+each agent reward: 3022027.0
+Episode 496 return: -4835086.5
+Episode: 496, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 497 return: -4646294.0
+Episode: 497, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 498 return: -4441967.5
+Episode: 498, total reward: 3021222.75
+each agent reward: 3021222.75
+Episode 499 return: -4538097.0
+Episode: 499, total reward: 3021222.75
+each agent reward: 3021222.75
