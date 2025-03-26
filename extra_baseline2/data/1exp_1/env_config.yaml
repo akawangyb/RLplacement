@@ -1,0 +1,13 @@
+server_number: 3
+user_number: 30
+container_number: 30
+penalty: 10000
+end_timestamp: 24
+cloud_delay: 1000
+edge_delay: 50
+#### 全部来自均匀分布
+max_cpu: 10
+max_mem: 16000
+max_net_in: 500
+max_net_out: 500
+max_disk: 500000
