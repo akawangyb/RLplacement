@@ -1,0 +1,4 @@
+server_id,tier,b_n,cpu_capacity,mem_capacity,storage_capacity,upload_capacity,download_capacity,location
+EDGE_001,mid-tier,10.0,15,27648,3,578,1155,Zone-3
+EDGE_002,mid-tier,10.0,10,18432,3,528,1721,Zone-2
+EDGE_003,low-tier,5.0,4,10240,1,272,645,Zone-3
