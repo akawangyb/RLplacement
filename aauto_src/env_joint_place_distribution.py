@@ -4,13 +4,16 @@
 # 描述: 强化学习环境
 # 作者: WangYuanbo
 # --------------------------------------------------
+import math
 import os
 from collections import defaultdict
+from math import exp
 from typing import List, Dict
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
+import torch
 
 
 # 定义好强化学习的3要素
@@ -42,8 +45,18 @@ class RequestGenerator:
             self.timeslot_dict[timeslot].append(req)
 
     def generate(self, timestep: int) -> List[Dict]:
-        """生成指定时隙的请求列表"""
-        return self.df_request[timestep]
+        # 过滤当前时隙的请求（假设time_slot列存在）
+        current_requests_df = self.timeslot_dict[timestep]
+
+        # 转换为字典列表（关键步骤）
+        requests = current_requests_df
+
+        # 类型检查与保证
+        assert isinstance(requests, list), "输出必须是列表"
+        for req in requests:
+            assert isinstance(req, dict), "列表元素必须是字典"
+
+        return requests
 
 
 class EdgeDeploymentEnv:
@@ -55,7 +68,8 @@ class EdgeDeploymentEnv:
             max_timesteps: 最大时隙数
             request_generator: 请求生成器（动态生成每个时隙的请求）
         """
-        self.penalty = 20000
+        self.penalty = 8000
+        self.steps = 0
         self.L_e = 50
         self.L_c = 300
         self.dataset_dir = dataset_dir
@@ -76,6 +90,12 @@ class EdgeDeploymentEnv:
         self.servers = servers
         self.containers = list(df_requests['service_type'].unique())
 
+        self.servers_number = len(servers)
+        self.containers_number = len(self.containers)
+
+        # 按 service_type 分组并提取唯一 h_c
+        # self.h_c_map = df.groupby("service_type")["h_c"].unique().reset_index()
+
         # 提取唯一的 service_type 和 h_c 组合
         self.h_c_map = df_requests[["service_type", "h_c"]].drop_duplicates().set_index("service_type")[
             "h_c"].to_dict()
@@ -95,11 +115,24 @@ class EdgeDeploymentEnv:
 
         self.service_type_to_int = {st: idx for idx, st in enumerate(self.containers)}
 
+        # 状态空间
+        # N*4+C*N + R_max*7(4+类型+保活内存+延迟) + C*N(干扰情况)+时隙
+        self.state_dim = self.servers_number * 5 + \
+                         2 * self.servers_number * self.containers_number + \
+                         self.max_requests * 7 + 1
+
         # 动作空间定义
         self.action_space = self._define_action_space()
 
-        # 状态空间维度
-        self.state_dim = self._calculate_state_dim()
+        self.server_last_placing_states = [[0] * self.containers_number] * self.servers_number
+
+        self.server_states = {server['server_id']: {
+            'loaded_containers': [0 * self.containers_number] * self.servers_number,
+            'cpu_used': 0,
+            'mem_used': 0,
+            'upload_used': 0,
+            'download_used': 0,
+        } for server in self.servers}
 
     def _define_action_space(self) -> Dict:
         """定义组合动作空间"""
@@ -108,133 +141,174 @@ class EdgeDeploymentEnv:
             'request_assign': None  # 动态长度，根据请求数量变化
         }
 
-    def _calculate_state_dim(self) -> int:
-        """计算状态向量维度"""
-        # 服务器状态维度: [cpu_usage, mem_usage, upload, download] + 容器加载状态
-        server_dim = 4 + len(self.containers)
-        # 请求状态维度: [container_type, cpu_demand, mem_demand, upload, download]
-        request_dim = 5
-        # 全局状态: 当前时隙
-        return len(self.servers) * server_dim + self.max_requests * request_dim + 1
-
     def reset(self) -> np.ndarray:
         """重置环境到初始状态"""
         # 重置时隙
         self.current_timestep = 0
-        # 初始化服务器资源状态
-        self.server_states = {
-            s['server_id']: {
-                'cpu_used': 0.0,
-                'mem_used': 0.0,
-                'upload_used': 0.0,
-                'download_used': 0.0,
-                'loaded_containers': np.zeros(len(self.containers), dtype=int)
-            } for s in self.servers
-        }
         # 生成初始请求批次
         self.current_requests = self.request_generator.generate(timestep=0)
-
         # 构建初始状态向量
         state = self._build_state()
+        return state, False
+
+    def _build_state(self) -> list:
+        """构建状态向量
+        每个时隙动作网络的输入
+        """
+        ####################################
+        # 当前服务器容量
+        # 1 服务器容量
+        server_cap = []
+        for server in self.servers:
+            for key, values in server.items():
+                if key not in ['server_id', 'tier', 'location', 'storage_capacity']:
+                    server_cap.append(server[key])
+        #######################################
+        # 2 上一时刻的部署结果
+        self.server_last_placing_states = [[0] * self.servers_number] * self.containers_number
+        last_placing = []
+        temp = []
+        for ele in self.server_last_placing_states:
+            temp += ele
+        last_placing = temp
+
+        #############################
+        #  3 当前的服务部署请求
+        # r_t = self.request_generator.generate(0)
+        temp_requests = self.current_requests
+        request = []
+        for rs in temp_requests:
+            for key, values in rs.items():
+                if key in ['request_id', 'image_size', 'time_slot']:
+                    continue
+                if key == 'service_type':
+                    request.append(self.service_type_to_int[values])
+                else:
+                    request.append(values)
+        # 把请求补全,每个请求
+        # 每个请求的数据是4种资源+保活内存+服务类型+计算延迟, 请求的总长度是133
+        number = self.max_requests - len(temp_requests)
+        for i in range(number):
+            request += [-1] * 7
+
+        # 4 上一个时隙的干扰状态
+        self.last_interference = [[0] * self.servers_number] * self.containers_number
+        # 把他拉伸
+        temp = []
+        for ele in self.last_interference:
+            temp += ele
+        interference = temp
+        #######################################
+        state = []
+        state += server_cap
+        state += last_placing
+        state += request
+        state += interference
+        state += [self.current_timestep * 1.0 / self.max_timesteps]  # 时间
         return state
 
-    def _build_state(self) -> np.ndarray:
-        """构建状态向量"""
-        state = []
+    def get_state(self):
+        """返回当前状态字典"""
+        return self._build_state()
 
-        # 服务器状态编码
-        for s in self.servers:
-            s_id = s['server_id']
-            state += [
-                self.server_states[s_id]['cpu_used'] / s['cpu_capacity'],
-                self.server_states[s_id]['mem_used'] / s['mem_capacity'],
-                self.server_states[s_id]['upload_used'] / s['upload_capacity'],
-                self.server_states[s_id]['download_used'] / s['download_capacity'],
-                *self.server_states[s_id]['loaded_containers']  # 容器加载状态
-            ]
+    def compute_penalty(self):
+        # 确保指数输入不过大
+        decay_rate = 0.001
+        exponent = -decay_rate * max(0, self.steps - 20000)
+        penalty_coef = self.penalty * math.exp(exponent)
+        return max(0, penalty_coef)
 
-        # 请求状态编码（填充至最大长度）
-        max_requests = self.max_requests  # 假设最大请求数
-        self.current_requests = [self.current_requests]
-        for req in self.current_requests:
-            state += [
-                self.service_type_to_int[req['service_type']],  # 需转换为整数索引
-                req['cpu_demand'],
-                req['mem_demand'],
-                req['upload_demand'],
-                req['download_demand']
-            ]
-        # 填充不足部分
-        state += [0] * (5 * (max_requests - len(self.current_requests)))
-
-        # 添加时隙信息
-        state.append(self.current_timestep / self.max_timesteps)
-
-        return np.array(state, dtype=np.float32)
-
-    def step(self, action: Dict) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: Tuple) -> Tuple[np.ndarray, float, bool, Dict]:
         """
         执行动作并返回新状态、奖励、终止标志和信息
-
         参数:
             action: 包含两个键值:
                 - 'container_deploy': 二维数组（server×container），0/1表示是否加载
                 - 'request_assign': 列表，每个元素为请求的目标服务器ID或'cloud'
         """
+        self.steps += 1
+        request_assign, container_deploy = action
         # 阶段1：执行容器部署动作
         container_reward = 0.0
         for server_idx, server in enumerate(self.servers):
-            s_id = server['server_id']
+            server_name = server['server_id']
             # 更新加载的容器
-            new_loaded = action['container_deploy'][server_idx]
+            new_loaded = container_deploy[server_idx]
             # 计算加载变更带来的时延
-            prev_loaded = self.server_states[s_id]['loaded_containers']
+            prev_loaded = self.server_states[server_name]['loaded_containers']
             load_changes = np.where(new_loaded != prev_loaded)[0]
             for c_idx in load_changes:
                 if new_loaded[c_idx] == 1:
                     # 计算镜像加载时延
                     container_reward -= self.h_c_map[self.containers[c_idx]] / server['b_n']
             # 更新服务器容器状态
-            self.server_states[s_id]['loaded_containers'] = new_loaded
+            self.server_states[server_name]['loaded_containers'] = new_loaded
 
         # 阶段2：执行请求分配动作
+        request_assign = torch.argmax(request_assign, dim=1).tolist()
         compute_reward = 0.0
         prop_reward = 0.0
         invalid_actions = 0
-
         for req_idx, req in enumerate(self.current_requests):
-            target = action['request_assign'][req_idx]
+            target = request_assign[req_idx]
             # 检查目标合法性
-            if target != 'cloud':
-                s_id = target
+            if target != self.servers_number:
+                server_idx = target
                 # 检查容器是否已加载
-                c_idx = self.containers.index(req['container_type'])
-                if not self.server_states[s_id]['loaded_containers'][c_idx]:
+                container_idx = self.containers.index(req['service_type'])
+                server_name = self.servers[server_idx]['server_id']
+                if not self.server_states[server_name]['loaded_containers'][container_idx]:
                     invalid_actions += 1
-                    target = 'cloud'  # 强制分配到云
+                    target = self.servers_number  # 强制分配到云
 
                 # 检查资源是否足够
-                server = next(s for s in self.servers if s['server_id'] == s_id)
-                if (self.server_states[s_id]['cpu_used'] + req['cpu_demand'] > server['cpu_capacity'] or
-                        self.server_states[s_id]['mem_used'] + req['mem_demand'] > server['mem_capacity']):
+                server = next(s for s in self.servers if s['server_id'] == server_name)
+                # 检查当前请求的服务器有没有超过资源
+                if (
+                        self.server_states[server_name]['cpu_used'] + req['cpu_demand'] > server['cpu_capacity'] or
+                        self.server_states[server_name]['mem_used'] + req['mem_demand'] > server['mem_capacity'] or
+                        self.server_states[server_name]['upload_used'] + req['upload_demand'] > server[
+                    'upload_capacity'] or
+                        self.server_states[server_name]['download_used'] + req['download_demand'] > server[
+                    'download_capacity']
+                ):
+                    # 任一资源超限，拒绝分配到该服务器
                     invalid_actions += 1
-                    target = 'cloud'
+                    target = self.servers_number
+            request_assign[req_idx] = target
 
             # 计算时延
-            if target == 'cloud':
+            if target == self.servers_number:
                 compute_reward -= req['compute_delay']
                 prop_reward -= self.L_c
             else:
                 # 边缘计算时延（含干扰）
-                compute_reward -= req['compute_delay'] * (1 + self._get_interference_coeff(target))
+                server_name = self.servers[target]['server_id']
+                compute_reward -= req['compute_delay'] * (1 + self._get_interference_coeff(server_name))
                 prop_reward -= self.L_e
 
             # 更新服务器资源使用（仅边缘目标）
-            if target != 'cloud':
-                self.server_states[target]['cpu_used'] += req['cpu_demand']
-                self.server_states[target]['mem_used'] += req['mem_demand']
+            if target != self.servers_number:
+                server_name = self.servers[target]['server_id']
+                self.server_states[server_name]['cpu_used'] += req['cpu_demand']
+                self.server_states[server_name]['mem_used'] += req['mem_demand']
+                self.server_states[server_name]['upload_used'] += req['upload_demand']
+                self.server_states[server_name]['download_used'] += req['download_demand']
+
+        # for server in self.servers:
+        #     server_name = server['server_id']
+        #     self.server_states[server_name]['cpu_used'] = 0
+        #     self.server_states[server_name]['upload_used'] = 0
+        #     self.server_states[server_name]['download_used'] = 0
+        for n in range(self.servers_number):
+            d_m = 0
+            for c in range(self.containers_number):
+                d_m += self.server_states[self.servers[n]['server_id']]['loaded_containers'][c] * \
+                       self.h_c_map[self.containers[c]]
+            self.server_states[server_name]['mem_used'] = d_m
 
         # 总奖励
+        # reward = container_reward + compute_reward + prop_reward - self.compute_penalty() * invalid_actions
         reward = container_reward + compute_reward + prop_reward - self.penalty * invalid_actions
 
         # 进入下一时隙
@@ -254,13 +328,21 @@ class EdgeDeploymentEnv:
             'prop_reward': prop_reward,
             'invalid_actions': invalid_actions
         }
+        # for key, value in info.items():
+        #     print(key, value)
         return next_state, reward, done, info
 
     def _get_interference_coeff(self, server_id: str) -> float:
         """根据服务器负载计算干扰系数"""
         server = next(s for s in self.servers if s['server_id'] == server_id)
         cpu_util = self.server_states[server_id]['cpu_used'] / server['cpu_capacity']
-        return 0.5 * cpu_util  # 示例公式
+        # return 0.5 * cpu_util  # 示例公式
+        return 0  # 示例公式
+
+    def get_current_requests(self):
+        """获取当前时隙的请求列表"""
+        self.current_requests = self.request_generator.generate(self.current_timestep)
+        return self.current_requests
 
 
 if __name__ == '__main__':
