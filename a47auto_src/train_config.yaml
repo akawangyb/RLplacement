@@ -1,0 +1,12 @@
+GAMMA : 0.95  # 折扣因子
+LAMBDA : 0.95  # GAE参数
+CLIP_EPS : 0.3  # PPO剪切阈值
+LR_ACTOR : 5e-4  # 策略网络学习率
+LR_CRITIC : 5e-4  # 价值网络学习率
+BATCH_SIZE : 64  # 训练批次大小
+EPOCHS : 10000  # 每个数据集的训练轮次
+MAX_GRAD_NORM : 0.2  # 梯度裁剪阈值
+multiplier_lr : 5e-3
+lag_multiplier : 1
+C_MAX : 0
+data_dir : data/exp1
