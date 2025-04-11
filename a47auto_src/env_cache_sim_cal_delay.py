@@ -3,6 +3,7 @@
 # 创建时间: 2025/3/29 18:22
 # 描述: 强化学习环境
 # 上层强化学习输出容器部署决策y，下层使用RR求解x
+# 该环境中，输入是组合动作，输出是当前时隙的时延
 # 作者: WangYuanbo
 # --------------------------------------------------
 import os
@@ -12,7 +13,6 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
-import torch
 
 
 # 定义好强化学习的3要素
@@ -117,7 +117,7 @@ class EdgeDeploymentEnv:
 
         # 状态空间
         # N*4+C*N + R_max*7(4+类型+保活内存+延迟) + C*N(干扰情况)+时隙
-        self.current_timestep = 0
+        self.current_timestep = 1
 
         # 动作空间定义
         self.action_space = self._define_action_space()
@@ -145,7 +145,7 @@ class EdgeDeploymentEnv:
     def reset(self) -> np.ndarray:
         """重置环境到初始状态"""
         # 重置时隙
-        self.current_timestep = 0
+        self.current_timestep = 1
         # 生成初始请求批次
         self.current_requests = self.request_generator.generate(timestep=0)
         # 构建初始状态向量
@@ -167,7 +167,7 @@ class EdgeDeploymentEnv:
                     server_cap.append(server[key])
         #######################################
         # 2 上一时刻的部署结果
-        if self.current_timestep == 0:
+        if self.current_timestep == 1:
             self.server_last_placing_states = [-1] * self.servers_number
         else:
             self.server_last_placing_states = [self.server_states[n]['loaded_containers'] \
@@ -242,29 +242,23 @@ class EdgeDeploymentEnv:
                 else:
                     d_m += self.h_c_map[self.containers[c]]
 
-        # 计算缓存命中数量
-        # hits = 0
-        # for rs in self.current_requests:
-        #     container_id = self.service_type_to_int[rs['service_type']]
-        #     for server_idx in range(self.servers_number):
-        #         if container_deploy[server_idx] == container_id:
-        #             hits += 1
-        delay = 0.0
+        edge_delay = 0.0
+        cloud_delay = 0.0
         for r_id, r in enumerate(self.current_requests):
             # 边缘时延
             for server_idx in range(self.servers_number):
-                delay += request_assign[r_id][server_idx] * self.L_e
-                delay += request_assign[r_id][server_idx] * r['compute_delay']
+                edge_delay += request_assign[r_id][server_idx] * self.L_e
+                edge_delay += request_assign[r_id][server_idx] * r['compute_delay']
             # 云时延
-            delay += request_assign[r_id][self.servers_number] * self.L_c
-            delay += request_assign[r_id][self.servers_number] * r['compute_delay']
+            cloud_delay += request_assign[r_id][self.servers_number] * self.L_c
+            cloud_delay += request_assign[r_id][self.servers_number] * r['compute_delay']
 
         # 总奖励
-        reward = delay + load_delay
+        reward = edge_delay + cloud_delay + load_delay
 
         # 进入下一时隙
         self.current_timestep += 1
-        done = (self.current_timestep >= self.max_timesteps)
+        done = (self.current_timestep > self.max_timesteps)
 
         # 生成新请求
         self.current_requests = self.request_generator.generate(self.current_timestep)
@@ -274,7 +268,7 @@ class EdgeDeploymentEnv:
 
         # 信息日志
         info = {
-            'container_reward': delay,
+            'container_reward': load_delay,
             'invalid_load': invalid_load,
         }
         return next_state, reward, done, info
